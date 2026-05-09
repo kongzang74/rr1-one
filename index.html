@@ -1,15 +1,18 @@
-<IDOCTYPE html>
-<html>
+<!DOCTYPE html>
+<html lang="zh-CN>
 <head>
 <meta charset="UTF-8">
 <style>
   body {
-    background-image: url('a.jpg');
+  background-image: url('a.jpg');
     background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
+    background-position: center;
     background-attachment: fixed;
-    background-color:#f0f0f0;
+    background-repeat: no-repeat;
+    background-color: rgba(0,0,0,0.4);
+    background-blend-mode: overlay;
+    animation: gradientBG 10s ease infinite;
+    background-size: cover;
     min-height: 100vh;
     color: white;
     font-family: sans-serif;
@@ -17,14 +20,31 @@
     flex-direction: column;
     justify-content: center;
     align-items: center;
+    color:white;
     text-align: center;
     margin: 0;
   }
+  
+  @keyframes gradientBG{
+    0% {
+      background-color: rgba(238, 119, 82, 0.4);
+    }
+    33% {
+      background-color: rgba(231, 60, 126, 0.4);
+    }
+    66% {
+      background-color: rgba(35, 166, 213, 0.4);
+    }
+    100% {
+      background-color: rgba(35, 213, 171, 0.4);
+    }
+  }
+    
+  
 </style>
 </head>
-  <h1>嗨咯</h1>
-  <p>kongzhang</p>
-  
+  <h1>你好</h1>
+
   <audio src="b.mp3" autoplay loop></audio>
 </body>
 </html>
