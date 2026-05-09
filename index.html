@@ -2,7 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
-  <title>明显的光线特效</title>
+  <title>柔和光晕特效</title>
   <style>
     body {
       background-image: url('a.jpg');
@@ -20,63 +20,69 @@
       align-items: center;
       text-align: center;
       margin: 0;
-      overflow: hidden; /* 防止光线溢出出现滚动条 */
     }
 
-    /* --- 修改开始：光线特效 --- */
-    .light-ray {
+    /* --- 修改开始：光晕特效 --- */
+    .halo {
       position: fixed;
-      top: -50%; /* 将中心点移出屏幕上方 */
-      right: -10%; /* 稍微偏右 */
-      width: 150vw; /* 宽度要非常大，覆盖整个对角线 */
-      height: 150vh;
-      z-index: 1; /* 保证在背景之上，文字之下（如果文字看不清可调高） */
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 100vw;
+      height: 100vh;
+      z-index: 1; /* 确保光晕在背景之上，文字之下 */
       
-      /* 使用圆锥渐变模拟光束 */
-      background: conic-gradient(
-        from 180deg at 50% 0%, 
-        transparent 0deg, 
-        rgba(255, 255, 255, 0) 60deg, 
-        rgba(255, 255, 255, 0.4) 90deg, /* 光线核心：调整透明度让光更明显 */
-        rgba(255, 255, 255, 0) 120deg, 
-        transparent 180deg
+      /* 使用径向渐变创建光晕的核心 */
+      background: radial-gradient(
+        circle at center, 
+        rgba(255, 255, 255, 0.6) 0%,   /* 中心：亮白色 */
+        rgba(255, 245, 220, 0.3) 40%,  /* 中间：带点暖色调 */
+        rgba(255, 255, 255, 0) 75%     /* 边缘：完全透明 */
       );
       
-      /* 混合模式：让光线与背景图融合，产生“照亮”的感觉 */
-      mix-blend-mode: screen; 
+      /* 混合模式：让光晕与背景图自然融合，产生“照亮”感 */
+      mix-blend-mode: screen;
       
-      /* 旋转动画 */
-      animation: ray-rotate 10s linear infinite;
-      
-      /* 模糊滤镜：让光线边缘柔和 */
-      filter: blur(20px);
+      /* 动画：让光晕产生呼吸效果 */
+      animation: halo-breathe 4s ease-in-out infinite;
     }
 
-    /* 添加第二层光线，增加层次感 */
-    .light-ray::after {
+    /* 使用伪元素增加一层模糊，让光晕更柔和、范围更大 */
+    .halo::after {
       content: '';
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: radial-gradient(circle at 50% 0%, rgba(255, 255, 200, 0.5), transparent 60%);
-      filter: blur(10px);
+      background: radial-gradient(
+        circle at center, 
+        rgba(255, 255, 255, 0.4) 0%, 
+        rgba(255, 255, 255, 0) 60%
+      );
+      filter: blur(40px); /* 大范围模糊 */
+      z-index: -1; /* 放在主光晕后面 */
     }
 
-    @keyframes ray-rotate {
-      from { transform: rotate(-45deg); }
-      to { transform: rotate(315deg); }
+    @keyframes halo-breathe {
+      0%, 100% {
+        opacity: 0.6;
+        transform: translate(-50%, -50%) scale(1);
+      }
+      50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1);
+      }
     }
     /* --- 修改结束 --- */
 
     h1 {
-      z-index: 2; /* 确保文字在光线上面 */
-      text-shadow: 0 2px 10px rgba(0,0,0,0.5); /* 给文字加点阴影，防止光线太亮看不清 */
+      z-index: 2; /* 确保文字在光晕之上 */
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
     }
   </style>
 </head>
 <body>
 
-  <!-- 这是一个纯粹的光线元素，没有实体圆球 -->
-  <div class="light-ray"></div>
+  <!-- 光晕元素 -->
+  <div class="halo"></div>
 
   <h1>你好</h1>
  
