@@ -1,50 +1,94 @@
 <!DOCTYPE html>
-<html lang="zh-CN>
+<html lang="zh-CN">
 <head>
-<meta charset="UTF-8">
-<style>
-  body {
-  background-image: url('a.jpg');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
-    background-color: rgba(0,0,0,0.2);
-    background-blend-mode: overlay;
-    animation: gradientBG 10s ease infinite;
-    background-size: cover;
-    min-height: 100vh;
-    color: white;
-    font-family: sans-serif;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    color:white;
-    text-align: center;
-    margin: 0;
-  }
-  
-  @keyframes gradientBG{
-    0% {
-      background-color: rgba(238, 119, 82, 0.2);
+  <meta charset="UTF-8">
+  <title>太阳光照特效</title>
+  <style>
+    /* 页面主体样式 */
+    body {
+      background-image: url('a.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      background-repeat: no-repeat;
+      background-color: #f0f0f0;
+      min-height: 100vh;
+      color: white;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      margin: 0;
     }
-    33% {
-      background-color: rgba(231, 60, 126, 0.2);
+
+    /* 太阳光照特效样式 */
+    .sun {
+      position: fixed;
+      top: 50px;
+      left: 50px;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: radial-gradient(circle, #ffd700, #ff8c00);
+      box-shadow: 0 0 40px #ff8c00, 0 0 80px #ff4500;
+      animation: sun-pulse 3s ease-in-out infinite alternate;
+      z-index: 10;
     }
-    66% {
-      background-color: rgba(35, 166, 213, 0.2);
+
+    .sun::before {
+      content: '';
+      position: absolute;
+      top: -20px;
+      left: -20px;
+      right: -20px;
+      bottom: -20px;
+      border-radius: 50%;
+      border: 2px dashed rgba(255, 215, 0, 0.6);
+      animation: sun-rays-spin 20s linear infinite;
     }
-    100% {
-      background-color: rgba(35, 213, 171, 0.2);
+
+    @keyframes sun-pulse {
+      0% {
+        box-shadow: 0 0 30px #ff8c00, 0 0 60px #ff4500;
+        transform: scale(1);
+      }
+      100% {
+        box-shadow: 0 0 50px #ffd700, 0 0 100px #ff8c00;
+        transform: scale(1.1);
+      }
     }
-  }
-    
-  
-</style>
+
+    @keyframes sun-rays-spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 480px) {
+      .sun {
+        width: 60px;
+        height: 60px;
+        top: 30px;
+        left: 30px;
+      }
+      .sun::before {
+        top: -15px;
+        left: -15px;
+        right: -15px;
+        bottom: -15px;
+      }
+    }
+  </style>
 </head>
+<body>
+  <!-- 太阳特效元素 -->
+  <div class="sun"></div>
+
+  <!-- 页面内容 -->
   <h1>你好</h1>
 
+  <!-- 背景音乐 -->
   <audio src="b.mp3" autoplay loop></audio>
 </body>
 </html>
