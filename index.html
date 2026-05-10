@@ -79,7 +79,20 @@
 
   <h1>你好</h1>
   
-  <audio src="78.mp3" autoplay loop></audio>
+   <audio id="myAudio" loop>
+        <source src="78.mp3" type="audio/mpeg">
+        您的浏览器不支持 audio 元素。
+    </audio>
+    <br>
+    <!-- 通过按钮触发播放，符合浏览器策略 -->
+    <button onclick="playAudio()">播放音乐</button>
+
+    <script>
+        function playAudio() {
+            var audio = document.getElementById("myAudio");
+            audio.play();
+        }
+    </script>
 </body>
 </html>
 </html>
