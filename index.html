@@ -2,6 +2,7 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
+  <title>音乐播放器</title>
   <style>
     body {
       background-image: url('a.jpg');
@@ -19,39 +20,29 @@
       align-items: center;
       text-align: center;
       margin: 0;
-      overflow: hidden; /* 防止光线溢出出现滚动条 */
+      overflow: hidden;
     }
 
-    /* --- 修改开始：光线特效 --- */
     .light-ray {
       position: fixed;
-      top: -50%; /* 将中心点移出屏幕上方 */
-      right: -10%; /* 稍微偏右 */
-      width: 150vw; /* 宽度要非常大，覆盖整个对角线 */
+      top: -50%;
+      right: -10%;
+      width: 150vw;
       height: 150vh;
-      z-index: 1; /* 保证在背景之上，文字之下（如果文字看不清可调高） */
-      
-      /* 使用圆锥渐变模拟光束 */
+      z-index: 1;
       background: conic-gradient(
         from 180deg at 50% 0%, 
         transparent 0deg, 
         rgba(255, 255, 255, 0) 60deg, 
-        rgba(255, 255, 255, 0.4) 90deg, /* 光线核心：调整透明度让光更明显 */
+        rgba(255, 255, 255, 0.4) 90deg,
         rgba(255, 255, 255, 0) 120deg, 
         transparent 180deg
       );
-      
-      /* 混合模式：让光线与背景图融合，产生“照亮”的感觉 */
-      mix-blend-mode: screen; 
-      
-      /* 旋转动画 */
+      mix-blend-mode: screen;
       animation: ray-rotate 10s linear infinite;
-      
-      /* 模糊滤镜：让光线边缘柔和 */
       filter: blur(20px);
     }
 
-    /* 添加第二层光线，增加层次感 */
     .light-ray::after {
       content: '';
       position: absolute;
@@ -64,18 +55,23 @@
       from { transform: rotate(-45deg); }
       to { transform: rotate(315deg); }
     }
-    /* --- 修改结束 --- */
 
-    h1 {
-      z-index: 2; /* 确保文字在光线上面 */
-      text-shadow: 0 2px 10px rgba(0,0,0,0.5); /* 给文字加点阴影，防止光线太亮看不清 */
+    h1, button {
+      z-index: 2;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+    
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
     }
 
   </style>
 </head>
 <body>
 
-  <!-- 这是一个纯粹的光线元素，没有实体圆球 -->
   <div class="light-ray"></div>
 
   <h1>你好</h1>
@@ -83,7 +79,7 @@
   
   <!-- 1. 添加 muted 属性，初始状态为静音 -->
   <audio id="myAudio" loop muted>
-      <source src="b.mp3" type="audio/mpeg">
+      <source src="78.mp3" type="audio/mpeg">
   </audio>
   
   <button onclick="playAudio()">播放音乐</button>
