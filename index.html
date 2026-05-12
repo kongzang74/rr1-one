@@ -1,9 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8">
   <style>
+    /* ... 你的样式代码保持不变 ... */
     body {
       background-image: url('a.jpg');
       background-size: cover;
@@ -22,7 +22,6 @@
       margin: 0;
       overflow: hidden;
     }
-
     .light-ray {
       position: fixed;
       top: -50%;
@@ -30,19 +29,11 @@
       width: 150vw;
       height: 150vh;
       z-index: 1;
-      background: conic-gradient(
-        from 180deg at 50% 0%, 
-        transparent 0deg, 
-        rgba(255, 255, 255, 0) 60deg, 
-        rgba(255, 255, 255, 0.4) 90deg,
-        rgba(255, 255, 255, 0) 120deg, 
-        transparent 180deg
-      );
+      background: conic-gradient(from 180deg at 50% 0%, transparent 0deg, rgba(255, 255, 255, 0) 60deg, rgba(255, 255, 255, 0.4) 90deg, rgba(255, 255, 255, 0) 120deg, transparent 180deg);
       mix-blend-mode: screen;
       animation: ray-rotate 10s linear infinite;
       filter: blur(20px);
     }
-
     .light-ray::after {
       content: '';
       position: absolute;
@@ -50,24 +41,20 @@
       background: radial-gradient(circle at 50% 0%, rgba(255, 255, 200, 0.5), transparent 60%);
       filter: blur(10px);
     }
-
     @keyframes ray-rotate {
       from { transform: rotate(-45deg); }
       to { transform: rotate(315deg); }
     }
-
     h1, button {
       z-index: 2;
       text-shadow: 0 2px 10px rgba(0,0,0,0.5);
     }
-    
     button {
       padding: 10px 20px;
       font-size: 16px;
       cursor: pointer;
       margin-top: 20px;
     }
-
   </style>
 </head>
 <body>
@@ -77,23 +64,34 @@
   <h1>你好</h1>
   <h1>点击按钮播放音乐</h1>
   
-  <!-- 1. 添加 muted 属性，初始状态为静音 -->
+  <!-- 1. 初始状态必须是静音 (muted) -->
   <audio id="myAudio" loop muted>
       <source src="78.mp3" type="audio/mpeg">
   </audio>
   
-  <button onclick="playAudio()">播放音乐</button>
+  <button id="playBtn">播放音乐</button>
 
   <script>
-      function playAudio() {
-          var audio = document.getElementById("myAudio");
-          // 2. 在播放前，先取消静音
+      const audio = document.getElementById("myAudio");
+      const btn = document.getElementById("playBtn");
+
+      // 2. 定义一个函数来处理播放逻辑
+      function startPlayback() {
+          // 先取消静音
           audio.muted = false;
-          // 3. 调用 play() 方法，并使用 catch 捕获可能的错误，方便调试
-          audio.play().catch(function(error) {
-              console.log("播放失败:", error);
-          });
+          // 然后尝试播放
+          const playPromise = audio.play();
+          if (playPromise !== undefined) {
+              playPromise.catch(error => {
+                  console.log("播放失败，可能是被浏览器策略阻止:", error);
+              });
+          }
       }
+
+      // 3. 同时监听 'click' 和 'touchstart' 事件，确保在移动端也能可靠触发
+      // { once: true } 确保事件只触发一次
+      btn.addEventListener('click', startPlayback, { once: true });
+      btn.addEventListener('touchstart', startPlayback, { once: true });
   </script>
 </body>
 </html>
