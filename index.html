@@ -1,1 +1,99 @@
 
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body {
+      background-image: url('a.jpg');
+      background-size: cover;
+      background-position: center;
+      background-attachment: fixed;
+      background-repeat: no-repeat;
+      background-color: #f0f0f0;
+      min-height: 100vh;
+      color: white;
+      font-family: sans-serif;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .light-ray {
+      position: fixed;
+      top: -50%;
+      right: -10%;
+      width: 150vw;
+      height: 150vh;
+      z-index: 1;
+      background: conic-gradient(
+        from 180deg at 50% 0%, 
+        transparent 0deg, 
+        rgba(255, 255, 255, 0) 60deg, 
+        rgba(255, 255, 255, 0.4) 90deg,
+        rgba(255, 255, 255, 0) 120deg, 
+        transparent 180deg
+      );
+      mix-blend-mode: screen;
+      animation: ray-rotate 10s linear infinite;
+      filter: blur(20px);
+    }
+
+    .light-ray::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(255, 255, 200, 0.5), transparent 60%);
+      filter: blur(10px);
+    }
+
+    @keyframes ray-rotate {
+      from { transform: rotate(-45deg); }
+      to { transform: rotate(315deg); }
+    }
+
+    h1, button {
+      z-index: 2;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    }
+    
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+  </style>
+</head>
+<body>
+
+  <div class="light-ray"></div>
+
+  <h1>你好</h1>
+  <h1>点击按钮播放音乐</h1>
+  
+  <!-- 1. 添加 muted 属性，初始状态为静音 -->
+  <audio id="myAudio" loop muted>
+      <source src="78.mp3" type="audio/mpeg">
+  </audio>
+  
+  <button onclick="playAudio()">播放音乐</button>
+
+  <script>
+      function playAudio() {
+          var audio = document.getElementById("myAudio");
+          // 2. 在播放前，先取消静音
+          audio.muted = false;
+          // 3. 调用 play() 方法，并使用 catch 捕获可能的错误，方便调试
+          audio.play().catch(function(error) {
+              console.log("播放失败:", error);
+          });
+      }
+  </script>
+</body>
+</html>
