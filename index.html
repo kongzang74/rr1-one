@@ -4,43 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        /* 基础样式，清除默认边距 */
-        body, html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-            overflow: hidden; /* 防止出现滚动条 */
-        }
-
-        /* 视频背景容器 */
+        body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
         .video-bg {
-            position: fixed; /* 固定在视窗，不随页面滚动 */
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            z-index: -1; /* 放在最底层 */
-            overflow: hidden;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            z-index: -1; overflow: hidden;
         }
-
-        /* 视频元素样式 */
         .video-bg video {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            object-fit: cover; /* 核心：保持比例铺满屏幕，自动裁剪多余部分 */
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover;
         }
-
-        /* 你的网页内容 */
         .content {
-            position: relative;
-            z-index: 1;
-            color: white;
-            text-align: center;
-            padding-top: 20vh;
-            font-family: Arial, sans-serif;
+            position: relative; z-index: 1; color: white;
+            text-align: center; padding-top: 20vh; font-family: Arial, sans-serif;
+        }
+        /* 音乐控制按钮样式 */
+        #music-btn {
+            position: fixed; top: 20px; right: 20px; z-index: 100;
+            padding: 10px 20px; background: rgba(0,0,0,0.5); color: white;
+            border: 1px solid white; border-radius: 20px; cursor: pointer;
         }
     </style>
 </head>
@@ -48,14 +29,7 @@
 
     <!-- 视频背景区域 -->
     <div class="video-bg">
-        <!-- 
-          autoplay: 自动播放 
-          muted: 静音（现代浏览器强制要求静音才能自动播放）
-          loop: 循环播放
-          playsinline: 手机端禁止全屏弹出，作为内联背景播放
-        -->
         <video autoplay muted loop playsinline>
-            <!-- 将下面的 src 换成你自己的视频文件路径 -->
             <source src="n.mp4" type="video/mp4">
             你的浏览器不支持 HTML5 视频。
         </video>
@@ -65,7 +39,37 @@
     <div class="content">
     </div>
 
-<audio src="78.mp3" autoplay loop></audio>
+    <!-- 音乐控制按钮与音频标签 (已移入 body 内) -->
+    <button id="music-btn">🎵 播放音乐</button>
+    <!-- 添加 id 方便 JS 控制，preload 预加载音乐 -->
+    <audio id="bg-music" src="78.mp3" loop preload="auto"></audio>
+
+    <script>
+        // 获取音频和按钮元素
+        var audio = document.getElementById("bg-music");
+        var btn = document.getElementById("music-btn");
+
+        // 尝试自动播放（部分旧版安卓或特定环境可能生效）
+        window.addEventListener('load', function() {
+            audio.play().then(() => {
+                btn.innerHTML = "⏸ 暂停音乐";
+            }).catch(() => {
+                // 如果自动播放被拦截，保持按钮为“播放音乐”，等待用户点击
+                console.log("自动播放被浏览器拦截，等待用户交互");
+            });
+        });
+
+        // 绑定按钮点击事件，通过用户交互来播放/暂停
+        btn.addEventListener("click", function() {
+            if (audio.paused) {
+                audio.play();
+                btn.innerHTML = "⏸ 暂停音乐";
+            } else {
+                audio.pause();
+                btn.innerHTML = "🎵 播放音乐";
+            }
+        });
+    </script>
 
 </body>
 </html>
