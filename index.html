@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body, html { margin: 0; padding: 0; height: 100%; overflow: hidden; }
+        
+        body {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+        }
+
         .video-bg {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             z-index: -1; overflow: hidden;
@@ -13,21 +20,136 @@
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             object-fit: cover;
         }
+
+        /* 桌面端默认样式 */
         .content {
             position: relative; z-index: 1; color: white;
-            text-align: center; padding-top: 20vh; font-family: Arial, sans-serif;
+            text-align: center; font-family: Arial, sans-serif;
+            width: 80%;
+            max-width: 400px;
+            padding: 50px 40px;
+            margin-right: 100px;
+            
+            /* 毛玻璃特效 */
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            
+            opacity: 0;
+            animation: fadeInUp 1.5s ease-out forwards;
+            animation-delay: 2s;
         }
-        /* 音乐控制按钮样式 */
-        #music-btn {
+
+        @media (max-width: 768px) {
+            body { justify-content: center; }
+            .content {
+                width: 85%; max-width: none; margin-right: 0; padding: 40px 25px;
+            }
+            h1 { font-size: 32px !important; }
+        }
+
+        /* --- 右上角毛玻璃音乐播放器样式 --- */
+        .music-player {
             position: fixed; top: 20px; right: 20px; z-index: 100;
-            padding: 10px 20px; background: rgba(0,0,0,0.5); color: white;
-            border: 1px solid white; border-radius: 20px; cursor: pointer;
+            display: flex; align-items: center; padding: 10px 15px;
+            border-radius: 30px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
         }
+        .music-player:hover { background: rgba(255, 255, 255, 0.25); transform: translateY(-2px); }
+        .play-btn {
+            background: none; border: none; color: white; font-size: 24px;
+            cursor: pointer; padding: 0; margin-right: 12px; display: flex; align-items: center;
+        }
+        .song-info { display: flex; flex-direction: column; margin-right: 10px; }
+        .song-title {
+            font-size: 14px; font-weight: bold; color: white;
+            max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .song-artist { font-size: 12px; color: rgba(255, 255, 255, 0.7); }
+        
+        .music-bars { display: flex; align-items: flex-end; height: 15px; gap: 2px; }
+        .bar { width: 3px; background: white; border-radius: 2px; animation: equalizer 1s ease-in-out infinite; }
+        .bar:nth-child(1) { height: 60%; animation-delay: 0s; }
+        .bar:nth-child(2) { height: 100%; animation-delay: 0.2s; }
+        .bar:nth-child(3) { height: 40%; animation-delay: 0.4s; }
+        .bar:nth-child(4) { height: 80%; animation-delay: 0.1s; }
+
+        .music-player.paused .bar {
+            animation-play-state: paused; height: 20% !important; transition: height 0.3s;
+        }
+        @keyframes equalizer { 0%, 100% { height: 20%; } 50% { height: 100%; } }
+
+        /* --- 换歌按钮样式 --- */
+        .upload-btn {
+            position: fixed; top: 20px; right: 260px; z-index: 100;
+            padding: 10px 18px; border-radius: 20px;
+            background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white; font-size: 14px; cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); transition: all 0.3s ease;
+        }
+        .upload-btn:hover { background: rgba(255, 255, 255, 0.25); transform: translateY(-2px); }
+
+        /* --- 新增：歌曲列表样式 --- */
+        .playlist {
+            position: fixed; top: 80px; right: 20px; z-index: 99;
+            width: 200px;
+            background: rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 10px; display: flex; flex-direction: column; gap: 8px;
+        }
+        .playlist-item {
+            background: rgba(255, 255, 255, 0.1); border: none; border-radius: 8px;
+            padding: 8px 12px; color: white; text-align: left; cursor: pointer;
+            font-size: 13px; transition: background 0.2s;
+        }
+        .playlist-item:hover { background: rgba(255, 255, 255, 0.3); }
+        .playlist-item.active { background: rgba(255, 255, 255, 0.5); font-weight: bold; }
+
+        @media (max-width: 768px) {
+            .music-player { top: 15px; right: 15px; padding: 8px 12px; }
+            .upload-btn { top: 15px; right: 15px; padding: 6px 12px; font-size: 13px; top: 65px; }
+            .playlist { top: 120px; right: 15px; width: 180px; }
+            .song-title { font-size: 13px; max-width: 100px; }
+            .song-artist { font-size: 11px; }
+        }
+
+        /* 开屏动画样式 */
+        #splash-screen {
+            position: fixed; inset: 0;
+            background: linear-gradient(-45deg, #fbc2eb, #a6c1ee, #c2e9fb, #e0c3fc, #f6d365);
+            background-size: 400% 400%;
+            animation: rainbowFlow 3s ease infinite, splashFadeOut 2.5s ease-in-out forwards; 
+            z-index: 9999; display: flex; justify-content: center; align-items: center;
+            color: white; font-size: 24px; transition: opacity 1s ease-out;
+        }
+        #splash-screen h1 {
+            font-size: 72px; font-weight: bold; margin: 0; padding: 0 20px;
+            text-align: center; line-height: 1.2;
+            background: linear-gradient(-45deg, #fbc2eb, #a6c1ee, #c2e9fb, #e0c3fc, #f6d365);
+            background-size: 400% 400%; -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent; color: transparent;
+            animation: rainbowFlow 3s ease infinite;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.6), 0 0 20px rgba(255, 255, 255, 0.4);
+        }
+        @keyframes rainbowFlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes splashFadeOut { 0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; } }
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        #splash-screen.hidden { opacity: 0; pointer-events: none; }
     </style>
 </head>
 <body>
 
-    <!-- 视频背景区域 -->
+    <div id="splash-screen"><h1>欢迎访问</h1></div>
+
     <div class="video-bg">
         <video autoplay muted loop playsinline>
             <source src="n.mp4" type="video/mp4">
@@ -35,41 +157,105 @@
         </video>
     </div>
 
-    <!-- 网页主体内容 -->
-    <div class="content">
+    <!-- 换歌按钮 -->
+    <button class="upload-btn" onclick="document.getElementById('upload-music').click()">📂 换歌</button>
+    <input type="file" id="upload-music" accept="audio/*" style="display:none;">
+
+    <!-- 音乐播放器 -->
+    <div class="music-player paused" id="music-player">
+        <button class="play-btn" id="play-btn">▶</button>
+        <div class="song-info">
+            <span class="song-title" id="song-title">我的背景音乐</span>
+            <span class="song-artist">未知艺术家</span>
+        </div>
+        <div class="music-bars">
+            <div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div>
+        </div>
     </div>
 
-    <!-- 音乐控制按钮与音频标签 (已移入 body 内) -->
-    <button id="music-btn">🎵 播放音乐</button>
-    <!-- 添加 id 方便 JS 控制，preload 预加载音乐 -->
-    <audio id="bg-music" src="78.mp3" loop preload="auto"></audio>
+       <!-- 新增：歌曲列表 -->
+    <div class="playlist" id="playlist">
+        <!-- data-src 填写你在 GitHub 仓库里上传的音乐文件名 -->
+        <button class="playlist-item active" data-src="星炬不熄.mp3" data-name="默认背景音乐">🎵 默认背景音乐</button>
+        <button class="playlist-item" data-src="远航星的告别.mp3" data-name="我的第二首歌">🎵 我的第二首歌</button>
+        <button class="playlist-item" data-src="独角.mp3" data-name="我的第三首歌">🎵 我的第三首歌</button>
+    </div>
+
+    <div class="content">
+        <h1>你好，世界</h1>
+    </div>
+
+    <audio id="bg-music" src="星炬不熄.mp3" loop preload="auto"></audio>
 
     <script>
-        // 获取音频和按钮元素
-        var audio = document.getElementById("bg-music");
-        var btn = document.getElementById("music-btn");
-
-        // 尝试自动播放（部分旧版安卓或特定环境可能生效）
         window.addEventListener('load', function() {
-            audio.play().then(() => {
-                btn.innerHTML = "⏸ 暂停音乐";
-            }).catch(() => {
-                // 如果自动播放被拦截，保持按钮为“播放音乐”，等待用户点击
-                console.log("自动播放被浏览器拦截，等待用户交互");
-            });
-        });
+            var audio = document.getElementById("bg-music");
+            var player = document.getElementById("music-player");
+            var playBtn = document.getElementById("play-btn");
+            var songTitle = document.getElementById("song-title");
+            var splash = document.getElementById("splash-screen");
+            var uploadInput = document.getElementById("upload-music");
+            var playlistItems = document.querySelectorAll(".playlist-item");
 
-        // 绑定按钮点击事件，通过用户交互来播放/暂停
-        btn.addEventListener("click", function() {
-            if (audio.paused) {
-                audio.play();
-                btn.innerHTML = "⏸ 暂停音乐";
-            } else {
-                audio.pause();
-                btn.innerHTML = "🎵 播放音乐";
+            if (!audio) { console.error("未找到音频元素！"); return; }
+
+            function playMusic() {
+                audio.play().then(() => { 
+                    playBtn.innerHTML = "⏸"; 
+                    player.classList.remove("paused"); 
+                }).catch((e) => console.log("播放失败:", e));
+            }
+            function pauseMusic() { 
+                audio.pause(); 
+                playBtn.innerHTML = "▶"; 
+                player.classList.add("paused"); 
+            }
+
+            // 播放/暂停按钮点击事件
+            playBtn.addEventListener("click", function(e) {
+                e.stopPropagation(); 
+                if (audio.paused) { playMusic(); } else { pauseMusic(); }
+            });
+
+            // 换歌功能逻辑（本地上传）
+            uploadInput.addEventListener("change", function(e) {
+                var file = e.target.files;
+                if (file) {
+                    var fileURL = URL.createObjectURL(file);
+                    audio.src = fileURL; 
+                    var fileName = file.name.replace(/\.[^/.]+$/, "");
+                    songTitle.innerText = fileName;
+                    // 清除列表的选中状态
+                    playlistItems.forEach(item => item.classList.remove("active"));
+                    playMusic(); 
+                }
+            });
+
+            // 新增：点击列表切换歌曲
+            playlistItems.forEach(item => {
+                item.addEventListener("click", function() {
+                    // 切换选中样式
+                    playlistItems.forEach(i => i.classList.remove("active"));
+                    this.classList.add("active");
+
+                    // 切换歌曲
+                    var src = this.getAttribute("data-src");
+                    var name = this.getAttribute("data-name");
+                    audio.src = src;
+                    songTitle.innerText = name;
+                    playMusic();
+                });
+            });
+
+            // 开屏动画逻辑
+            setTimeout(() => { if (splash) splash.classList.add('hidden'); }, 2500);
+            if (splash) {
+                splash.addEventListener('click', function() {
+                    splash.classList.add('hidden');
+                    if (audio.paused) playMusic();
+                });
             }
         });
     </script>
-
 </body>
 </html>
