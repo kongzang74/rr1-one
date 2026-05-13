@@ -64,35 +64,21 @@
 
   <h1>你好</h1>
   <h1>点击按钮播放音乐</h1>
+
+  <audio id="myAudio" loop>
+        <source src="78.mp3" type="audio/mpeg">
+        您的浏览器不支持 audio 元素。
+    </audio>
+    <br>
+    <!-- 通过按钮触发播放，符合浏览器策略 -->
+    <button onclick="playAudio()">播放音乐</button>
+
+    <script>
+        function playAudio() {
+            var audio = document.getElementById("myAudio");
+            audio.play();
+        }
   
-  <!-- 1. 初始状态必须是静音 (muted) -->
-  <audio id="myAudio" loop muted>
-      <source src="1.mp3" type="audio/mpeg">
-  </audio>
-  
-  <button id="playBtn">播放音乐</button>
-
-  <script>
-      const audio = document.getElementById("myAudio");
-      const btn = document.getElementById("playBtn");
-
-      // 2. 定义一个函数来处理播放逻辑
-      function startPlayback() {
-          // 先取消静音
-          audio.muted = false;
-          // 然后尝试播放
-          const playPromise = audio.play();
-          if (playPromise !== undefined) {
-              playPromise.catch(error => {
-                  console.log("播放失败，可能是被浏览器策略阻止:", error);
-              });
-          }
-      }
-
-      // 3. 同时监听 'click' 和 'touchstart' 事件，确保在移动端也能可靠触发
-      // { once: true } 确保事件只触发一次
-      btn.addEventListener('click', startPlayback, { once: true });
-      btn.addEventListener('touchstart', startPlayback, { once: true });
   </script>
 </body>
 </html>
