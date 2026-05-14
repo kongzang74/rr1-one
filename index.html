@@ -1,200 +1,227 @@
 <!doctype html>
-<html lang="en">
-
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 禁止手机双击放大，保证交互像原生App一样丝滑 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title></title>
     <style>
-        * {
-            padding: 0;
-            margin: 0;
-        }
-
+        * { padding: 0; margin: 0; box-sizing: border-box; }
+        body, html { width: 100%; height: 100%; overflow: hidden; }
+        
         body {
-            width: 100%;
-            height: 100vh;
-            /* 修正了渐变色中的非法字符 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
             background-image: linear-gradient(-225deg, #231557 0%, #43107a 29%, #ff1361 100%);
-            overflow: hidden; /* 防止出现滚动条 */
         }
 
-        canvas {
-            position: fixed;
-            width: 100%;
-            height: 100%;
+        /* 星空 Canvas 放在最底层 */
+        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+
+        /* 右上角毛玻璃音乐播放器 */
+        .music-player {
+            position: fixed; 
+            top: calc(20px + env(safe-area-inset-top)); 
+            right: 20px; 
+            z-index: 100;
+            display: flex; align-items: center; padding: 10px 15px; border-radius: 30px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(15px) saturate(1.5);
+            -webkit-backdrop-filter: blur(15px) saturate(1.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); 
+            transition: all 0.3s ease; cursor: pointer;
+        }
+        .music-player:active { transform: scale(0.95); } /* 手机端点击反馈 */
+        
+        .play-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0; margin-right: 12px; display: flex; align-items: center; }
+        .song-info { display: flex; flex-direction: column; margin-right: 10px; }
+        .song-title { font-size: 14px; font-weight: bold; color: white; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        /* 音乐律动条 */
+        .music-bars { display: flex; align-items: flex-end; height: 15px; gap: 2px; }
+        .bar { width: 3px; background: white; border-radius: 2px; animation: equalizer 1s ease-in-out infinite; }
+        .bar:nth-child(1) { height: 60%; animation-delay: 0s; }
+        .bar:nth-child(2) { height: 100%; animation-delay: 0.2s; }
+        .bar:nth-child(3) { height: 40%; animation-delay: 0.4s; }
+        .bar:nth-child(4) { height: 80%; animation-delay: 0.1s; }
+        
+        .music-player.paused .bar { animation-play-state: paused; height: 20% !important; transition: height 0.3s; }
+        @keyframes equalizer { 0%, 100% { height: 20%; } 50% { height: 100%; } }
+
+        /* 歌曲列表 */
+        .playlist-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 98; background: rgba(0, 0, 0, 0.3); opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
+        .playlist-overlay.active { opacity: 1; pointer-events: auto; }
+        
+        .playlist {
+            position: fixed; top: calc(75px + env(safe-area-inset-top)); right: 20px; z-index: 99; width: 220px; 
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(20px) saturate(1.5);
+            -webkit-backdrop-filter: blur(20px) saturate(1.5);
+            border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.15); padding: 10px;
+            display: flex; flex-direction: column; gap: 8px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            opacity: 0; transform: translateY(-20px) scale(0.95); pointer-events: none;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-origin: top right;
+        }
+        .playlist.active { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+        
+        .playlist-item { background: rgba(255, 255, 255, 0.1); border: none; border-radius: 8px; padding: 10px 12px; color: white; text-align: left; cursor: pointer; font-size: 13px; transition: background 0.2s; }
+        .playlist-item:active { background: rgba(255, 255, 255, 0.3); } 
+        .playlist-item.active { background: rgba(255, 255, 255, 0.5); font-weight: bold; }
+
+        /* 手机端适配 */
+        @media (max-width: 768px) {
+            .music-player { top: calc(15px + env(safe-area-inset-top)); right: 15px; padding: 8px 12px; }
+            .playlist { top: calc(70px + env(safe-area-inset-top)); right: 15px; width: 200px; }
+            .song-title { font-size: 13px; max-width: 120px; }
         }
     </style>
 </head>
-
 <body>
     <canvas></canvas>
-</body>
 
-<script>
-    const STAR_COLOR = '#fff';
-    const STAR_SIZE = 3;
-    const STAR_MIN_SCALE = 0.2; // 修正了变量名拼写
-    const OVERFLOW_THRESHOLD = 50;
-    const STAR_COUNT = (window.innerWidth + window.innerHeight) / 8; // 修正了大小写
-    
-    const canvas = document.querySelector('canvas'); // 修正了大小写
-    const context = canvas.getContext('2d'); // 修正了大小写
-    
-    let scale = 1; // device pixel ratio
-    let width;
-    let height;
-    let stars = [];
-    let pointerX;
-    let pointerY;
-    let velocity = { x: 0, y: 0, tx: 0, ty: 0, z: 0.0009 };
-    let touchInput = false; // 修正了变量名拼写
+    <!-- 遮罩层（点击空白处收起歌单） -->
+    <div class="playlist-overlay" id="playlist-overlay"></div>
 
-    generate();
-    resize();
-    step();
+    <!-- 音乐播放器 -->
+    <div class="music-player paused" id="music-player">
+        <button class="play-btn" id="play-btn">▶</button>
+        <div class="song-info"><span class="song-title" id="song-title">默认背景音乐</span></div>
+        <div class="music-bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
+    </div>
 
-    window.onresize = resize;
-    canvas.onmousemove = onmousemove;
-    canvas.ontouchmove = ontouchmove;
-    canvas.ontouchend = onmouseleave;
-    document.onmouseleave = onmouseleave; // 修正了单词拼写
+    <!-- 弹出式歌曲列表 -->
+    <div class="playlist" id="playlist">
+        <button class="playlist-item active" data-src="星炬不熄.mp3" data-name="星炬不熄">🎵 星炬不熄</button>
+        <button class="playlist-item" data-src="远航星的告别.mp3" data-name="远航星的告别">🎵 远航星的告别</button>
+        <button class="playlist-item" data-src="独角.mp3" data-name="独角">🎵 独角</button>
+    </div>
 
-    function generate() {
-        for (let i = 0; i < STAR_COUNT; i++) {
-            stars.push({
-                x: 0,
-                y: 0,
-                z: STAR_MIN_SCALE + Math.random() * (1 - STAR_MIN_SCALE), // 修正了大小写和变量名
+    <!-- 音频标签 -->
+    <audio id="bg-music" src="星炬不熄.mp3" preload="auto"></audio>
+
+    <!-- 音乐播放器 JS -->
+    <script>
+        window.addEventListener('load', function() {
+            var audio = document.getElementById("bg-music"), 
+                player = document.getElementById("music-player"),
+                playBtn = document.getElementById("play-btn"), 
+                songTitle = document.getElementById("song-title"),
+                playlist = document.getElementById("playlist"),
+                overlay = document.getElementById("playlist-overlay"), 
+                playlistItems = document.querySelectorAll(".playlist-item");
+
+            if (!audio) { console.error("未找到音频元素！"); return; }
+
+            function playMusic() {
+                audio.play().then(() => { playBtn.innerHTML = "⏸"; player.classList.remove("paused"); }).catch((e) => console.log("播放失败:", e));
+            }
+            function pauseMusic() { audio.pause(); playBtn.innerHTML = "▶"; player.classList.add("paused"); }
+
+            // 播放/暂停按钮点击
+            playBtn.addEventListener("click", function(e) { 
+                e.stopPropagation(); 
+                if (audio.paused) { playMusic(); } else { pauseMusic(); } 
+            });
+
+            // 展开/收起歌单
+            function togglePlaylist() { playlist.classList.toggle("active"); overlay.classList.toggle("active"); }
+            player.addEventListener("click", function(e) { 
+                if (e.target === playBtn || playBtn.contains(e.target)) return; 
+                togglePlaylist(); 
+            });
+
+            // 点击列表项切歌
+            playlistItems.forEach(item => {
+                item.addEventListener("click", function() {
+                    playlistItems.forEach(i => i.classList.remove("active")); 
+                    this.classList.add("active");
+                    var src = this.getAttribute("data-src"), name = this.getAttribute("data-name");
+                    audio.src = src; songTitle.innerText = name; playMusic();
+                });
+            });
+
+            // 自动播放下一首
+            audio.addEventListener('ended', function() {
+                let currentIndex = -1;
+                playlistItems.forEach((item, index) => { if (item.classList.contains('active')) currentIndex = index; });
+                let nextIndex = (currentIndex + 1) % playlistItems.length;
+                audio.currentTime = 0; playlistItems[nextIndex].click();
+            });
+
+            // 点击遮罩层收起歌单
+            overlay.addEventListener("click", function() { 
+                playlist.classList.remove("active"); 
+                overlay.classList.remove("active"); 
+            });
+        });
+    </script>
+
+    <!-- 修复后的星空特效 JS -->
+    <script>
+        const STAR_COLOR = '#fff', STAR_SIZE = 3, STAR_MIN_SCALE = 0.2, OVERFLOW_THRESHOLD = 50;
+        const STAR_COUNT = (window.innerWidth + window.innerHeight) / 8;
+        const canvas = document.querySelector('canvas'), context = canvas.getContext('2d');
+        let scale = 1, width, height, stars = [], pointerX, pointerY;
+        let velocity = { x: 0, y: 0, tx: 0, ty: 0, z: 0.0009 }, touchInput = false;
+        
+        generate(); resize(); step();
+        
+        window.onresize = resize;
+        // 改用 addEventListener 提高兼容性，并修复手机端反向移动的 Bug
+        window.addEventListener('mousemove', onmousemove);
+        window.addEventListener('touchmove', ontouchmove, { passive: false });
+        window.addEventListener('touchend', onmouseleave);
+        window.addEventListener('mouseleave', onmouseleave);
+
+        function generate() { for (let i = 0; i < STAR_COUNT; i++) { stars.push({ x: 0, y: 0, z: STAR_MIN_SCALE + Math.random() * (1 - STAR_MIN_SCALE) }); } }
+        function placestar(star) { star.x = Math.random() * width; star.y = Math.random() * height; }
+        function recyclestar(star) {
+            let direction = 'z', vx = Math.abs(velocity.x), vy = Math.abs(velocity.y);
+            if (vx > 1 || vy > 1) {
+                let axis = vx > vy ? (Math.random() < vx / (vx + vy) ? 'h' : 'v') : (Math.random() < vy / (vx + vy) ? 'v' : 'h');
+                direction = axis === 'h' ? (velocity.x > 0 ? 'l' : 'r') : (velocity.y > 0 ? 't' : 'b');
+            }
+            star.z = STAR_MIN_SCALE + Math.random() * (1 - STAR_MIN_SCALE);
+            if (direction === 'l') { star.z = 0.1; star.x = Math.random() * width; star.y = Math.random() * height; }
+            else if (direction === 'l') { star.x = -OVERFLOW_THRESHOLD; star.y = height * Math.random(); }
+            else if (direction === 'r') { star.x = width + OVERFLOW_THRESHOLD; star.y = height * Math.random(); }
+            else if (direction === 't') { star.x = width * Math.random(); star.y = -OVERFLOW_THRESHOLD; }
+            else if (direction === 'b') { star.x = width * Math.random(); star.y = height + OVERFLOW_THRESHOLD; }
+        }
+        function resize() { scale = window.devicePixelRatio || 1; width = window.innerWidth * scale; height = window.innerHeight * scale; canvas.width = width; canvas.height = height; stars.forEach(placestar); }
+        function step() { context.clearRect(0, 0, width, height); update(); render(); requestAnimationFrame(step); }
+        function update() {
+            velocity.tx *= 0.96; velocity.ty *= 0.96; velocity.x += (velocity.tx - velocity.x) * 0.8; velocity.y += (velocity.ty - velocity.y) * 0.8;
+            stars.forEach((star) => {
+                star.x += velocity.x * star.z; star.y += velocity.y * star.z;
+                star.x += (star.x - width / 2) * velocity.z * star.z; star.y += (star.y - height / 2) * velocity.z * star.z;
+                star.z += velocity.z;
+                if (star.x < -OVERFLOW_THRESHOLD || star.x > width + OVERFLOW_THRESHOLD || star.y < -OVERFLOW_THRESHOLD || star.y > height + OVERFLOW_THRESHOLD) { recyclestar(star); }
             });
         }
-    }
-
-    function placestar(star) {
-        star.x = Math.random() * width; // 修正了大小写
-        star.y = Math.random() * height; // 修正了大小写
-    }
-
-    function recyclestar(star) {
-        let direction = 'z';
-        let vx = Math.abs(velocity.x);
-        let vy = Math.abs(velocity.y);
-        if (vx > 1 || vy > 1) { // 修正了符号
-            let axis;
-            if (vx > vy) {
-                axis = Math.random() < vx / (vx + vy) ? 'h' : 'v'; // 修正了符号
-            } else {
-                axis = Math.random() < vy / (vx + vy) ? 'v' : 'h'; // 修正了符号
-            }
-
-            if (axis === 'h') {
-                direction = velocity.x > 0 ? 'l' : 'r'; // 修正了符号和字母(l代表left)
-            } else {
-                direction = velocity.y > 0 ? 't' : 'b'; // 修正了变量名拼写 sirection -> direction
-            }
+        function render() {
+            stars.forEach((star) => {
+                context.beginPath(); context.lineCap = 'round'; context.lineWidth = STAR_SIZE * star.z * scale;
+                context.globalAlpha = 0.5 + 0.5 * Math.random(); context.strokeStyle = STAR_COLOR;
+                context.moveTo(star.x, star.y);
+                let tailx = velocity.x * 2, tailY = velocity.y * 2;
+                if (Math.abs(tailx) < 0.1) tailx = 0.5; if (Math.abs(tailY) < 0.1) tailY = 0.5;
+                context.lineTo(star.x + tailx, star.y + tailY); context.stroke();
+            });
         }
-        star.z = STAR_MIN_SCALE + Math.random() * (1 - STAR_MIN_SCALE);
-        if (direction === 'l') { // 修正了字母 l
-            star.z = 0.1;
-            star.x = Math.random() * width;
-            star.y = Math.random() * height;
-        } else if (direction === 'l') { // 这里的逻辑原代码重复了，保持原意修正符号
-            star.x = -OVERFLOW_THRESHOLD;
-            star.y = height * Math.random();
-        } else if (direction === 'r') {
-            star.x = width + OVERFLOW_THRESHOLD;
-            star.y = height * Math.random(); // 修正了 height + math.random() 的逻辑错误
-        } else if (direction === 't') {
-            star.x = width * Math.random();
-            star.y = -OVERFLOW_THRESHOLD;
-        } else if (direction === 'b') {
-            star.x = width * Math.random();
-            star.y = height + OVERFLOW_THRESHOLD;
-        }
-    }
-
-    function resize() {
-        scale = window.devicePixelRatio || 1; // 修正了符号
-        width = window.innerWidth * scale; // 修正了大小写和符号
-        height = window.innerHeight * scale; // 修正了变量名 weight -> height 和大小写
-        canvas.width = width;
-        canvas.height = height;
-        stars.forEach(placestar);
-    }
-
-    function step() {
-        context.clearRect(0, 0, width, height);
-        update();
-        render();
-        requestAnimationFrame(step);
-    }
-
-    function update() {
-        velocity.tx *= 0.96;
-        velocity.ty *= 0.96;
-        velocity.x += (velocity.tx - velocity.x) * 0.8;
-        velocity.y += (velocity.ty - velocity.y) * 0.8;
-        stars.forEach((star) => { // 修正了箭头函数符号
-            star.x += velocity.x * star.z;
-            star.y += velocity.y * star.z;
-            star.x += (star.x - width / 2) * velocity.z * star.z;
-            star.y += (star.y - height / 2) * velocity.z * star.z;
-            star.z += velocity.z;
-            if (
-                star.x < -OVERFLOW_THRESHOLD || // 修正了符号
-                star.x > width + OVERFLOW_THRESHOLD || // 修正了符号
-                star.y < -OVERFLOW_THRESHOLD || // 修正了变量名拼写 OVERFLOW-THRESHOLD -> OVERFLOW_THRESHOLD
-                star.y > height + OVERFLOW_THRESHOLD // 修正了符号
-            ) {
-                recyclestar(star);
+        function movepointer(x, y) {
+            if (typeof pointerX === 'number' && typeof pointerY === 'number') {
+                let ox = x - pointerX; let oy = y - pointerY;
+                // 修复手机端滑动反向的 Bug：手机端 (touchInput=true) 乘以 1，电脑端乘以 -1
+                velocity.tx = velocity.tx + (ox / 8) * scale * (touchInput ? 1 : -1);
+                velocity.ty = velocity.ty + (oy / 8) * scale * (touchInput ? 1 : -1);
             }
-        });
-    }
-
-    function render() {
-        stars.forEach((star) => { // 修正了箭头函数符号
-            context.beginPath(); // 修正了单词拼写 beginpath -> beginPath
-            context.lineCap = 'round'; // 修正了大小写
-            context.lineWidth = STAR_SIZE * star.z * scale; // 修正了大小写
-            context.globalAlpha = 0.5 + 0.5 * Math.random(); // 修正了大小写
-            context.strokeStyle = STAR_COLOR; // 修正了大小写
-            context.beginPath(); // 修正了单词拼写
-            context.moveTo(star.x, star.y); // 修正了大小写
-            let tailx = velocity.x * 2;
-            let tailY = velocity.y * 2;
-            if (Math.abs(tailx) < 0.1) tailx = 0.5; // 修正了符号和分号
-            if (Math.abs(tailY) < 0.1) tailY = 0.5; // 修正了符号和分号
-            context.lineTo(star.x + tailx, star.y + tailY); // 修正了大小写
-            context.stroke(); // 原代码缺少了这一步，线条画了但没描边
-        });
-    }
-
-    function movepointer(x, y) {
-        if (typeof pointerX === 'number' && typeof pointerY === 'number') { // 修正了括号和符号
-            let ox = x - pointerX;
-            let oy = y - pointerY;
-            velocity.tx = velocity.tx + (ox / 8) * scale * (touchInput ? 1 : -1); // 修正了变量名和符号
-            velocity.ty = velocity.ty + (oy / 8) * scale * (touchInput ? 1 : -1); // 修正了变量名 0y -> oy 和符号
+            pointerX = x; pointerY = y;
         }
-        pointerX = x;
-        pointerY = y; // 修正了变量名拼写 pointetY -> pointerY
-    }
-
-    function onmousemove(event) {
-        touchInput = false; // 修正了变量名
-        movepointer(event.clientX, event.clientY); // 修正了大小写
-    }
-
-    function ontouchmove(event) {
-        touchInput = true; // 修正了变量名
-        movepointer(event.touches[0].clientX, event.touches[0].clientY); // 修正了大小写和多余的参数
-        event.preventDefault();
-    }
-
-    function onmouseleave() {
-        pointerX = null; // 修正了 nu11 -> null
-        pointerY = null; // 修正了 nu11 -> null
-    }
-</script>
-
+        function onmousemove(event) { touchInput = false; movepointer(event.clientX, event.clientY); }
+        function ontouchmove(event) { touchInput = true; movepointer(event.touches.clientX, event.touches.clientY); event.preventDefault(); }
+        function onmouseleave() { pointerX = null; pointerY = null; }
+    </script>
+</body>
 </html>
