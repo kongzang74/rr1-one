@@ -75,9 +75,33 @@
             .playlist { top: calc(70px + env(safe-area-inset-top)); right: 15px; width: 200px; }
             .song-title { font-size: 13px; max-width: 120px; }
         }
+
+        /* --- 开屏动画样式 --- */
+        #splash-screen {
+            position: fixed; inset: 0;
+            background: linear-gradient(-45deg, #fbc2eb, #a6c1ee, #c2e9fb, #e0c3fc, #f6d365);
+            background-size: 400% 400%;
+            animation: rainbowFlow 3s ease infinite, splashFadeOut 2.5s ease-in-out forwards; 
+            z-index: 9999; display: flex; justify-content: center; align-items: center;
+            color: white; font-size: 24px; transition: opacity 1s ease-out;
+        }
+        #splash-screen h1 {
+            font-size: 72px; font-weight: bold; margin: 0; padding: 0 20px; text-align: center; line-height: 1.2;
+            background: linear-gradient(-45deg, #fbc2eb, #a6c1ee, #c2e9fb, #e0c3fc, #f6d365);
+            background-size: 400% 400%; -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent; color: transparent;
+            animation: rainbowFlow 3s ease infinite;
+            text-shadow: 0 0 10px rgba(255, 255, 255, 0.6), 0 0 20px rgba(255, 255, 255, 0.4);
+        }
+        @keyframes rainbowFlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+        @keyframes splashFadeOut { 0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; } }
+        #splash-screen.hidden { opacity: 0; pointer-events: none; }
     </style>
 </head>
 <body>
+    <!-- 开屏动画 -->
+    <div id="splash-screen"><h1>欢迎访问</h1></div>
+
     <canvas></canvas>
 
     <!-- 遮罩层（点击空白处收起歌单） -->
@@ -109,7 +133,8 @@
                 songTitle = document.getElementById("song-title"),
                 playlist = document.getElementById("playlist"),
                 overlay = document.getElementById("playlist-overlay"), 
-                playlistItems = document.querySelectorAll(".playlist-item");
+                playlistItems = document.querySelectorAll(".playlist-item"),
+                splash = document.getElementById("splash-screen");
 
             if (!audio) { console.error("未找到音频元素！"); return; }
 
@@ -154,6 +179,17 @@
                 playlist.classList.remove("active"); 
                 overlay.classList.remove("active"); 
             });
+
+            // --- 开屏动画逻辑 ---
+            // 2.5秒后自动淡出隐藏
+            setTimeout(() => { if (splash) splash.classList.add('hidden'); }, 2500);
+            // 点击开屏动画可立即跳过并尝试播放音乐（解决手机浏览器自动播放限制）
+            if (splash) {
+                splash.addEventListener('click', function() {
+                    splash.classList.add('hidden');
+                    if (audio.paused) playMusic();
+                });
+            }
         });
     </script>
 
@@ -220,7 +256,7 @@
             pointerX = x; pointerY = y;
         }
         function onmousemove(event) { touchInput = false; movepointer(event.clientX, event.clientY); }
-        function ontouchmove(event) { touchInput = true; movepointer(event.touches.clientX, event.touches.clientY); event.preventDefault(); }
+        function ontouchmove(event) { touchInput = true; movepointer(event.touches[0].clientX, event.touches[0].clientY); event.preventDefault(); }
         function onmouseleave() { pointerX = null; pointerY = null; }
     </script>
 </body>
