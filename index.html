@@ -2,7 +2,6 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <!-- 禁止手机双击放大，保证交互像原生App一样丝滑 -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title></title>
     <style>
@@ -33,7 +32,7 @@
             box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); 
             transition: all 0.3s ease; cursor: pointer;
         }
-        .music-player:active { transform: scale(0.95); } /* 手机端点击反馈 */
+        .music-player:active { transform: scale(0.95); }
         
         .play-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0; margin-right: 12px; display: flex; align-items: center; }
         .song-info { display: flex; flex-direction: column; margin-right: 10px; }
@@ -69,11 +68,41 @@
         .playlist-item:active { background: rgba(255, 255, 255, 0.3); } 
         .playlist-item.active { background: rgba(255, 255, 255, 0.5); font-weight: bold; }
 
+        /* --- 右侧抽屉式文字区域样式 --- */
+        .content {
+            position: relative; z-index: 1; color: white;
+            text-align: center; font-family: Arial, sans-serif;
+            width: 80%; max-width: 400px;
+            padding: 100px 40px 50px; margin-right: 100px;
+            background: rgba(20, 20, 20, 0.3);
+            backdrop-filter: blur(15px) saturate(1.5);
+            -webkit-backdrop-filter: blur(15px) saturate(1.5);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            opacity: 0; transform: translateX(50px); pointer-events: none;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .content.active { opacity: 1; transform: translateX(0); pointer-events: auto; }
+
+        .sidebar-trigger {
+            position: fixed; top: 50%; right: 0; transform: translateY(-50%); z-index: 101;
+            padding: 15px 10px; background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-radius: 12px 0 0 12px; border: 1px solid rgba(255, 255, 255, 0.2); border-right: none;
+            color: white; cursor: pointer; writing-mode: vertical-rl; font-size: 14px; letter-spacing: 4px;
+            box-shadow: -4px 0 15px rgba(0, 0, 0, 0.2); transition: all 0.3s ease; user-select: none;
+        }
+        .sidebar-trigger:hover { background: rgba(255, 255, 255, 0.35); padding-right: 15px; }
+
         /* 手机端适配 */
         @media (max-width: 768px) {
             .music-player { top: calc(15px + env(safe-area-inset-top)); right: 15px; padding: 8px 12px; }
             .playlist { top: calc(70px + env(safe-area-inset-top)); right: 15px; width: 200px; }
             .song-title { font-size: 13px; max-width: 120px; }
+            .content { width: 85%; max-width: none; margin-right: 0; padding: 110px 20px 40px; }
+            h1 { font-size: 32px !important; } p { font-size: 15px; line-height: 1.6; }
+            .sidebar-trigger { padding: 20px 12px; font-size: 15px; letter-spacing: 6px; border-radius: 16px 0 0 16px; }
         }
 
         /* --- 开屏动画样式 --- */
@@ -104,7 +133,7 @@
 
     <canvas></canvas>
 
-    <!-- 遮罩层（点击空白处收起歌单） -->
+    <!-- 遮罩层（点击空白处收起歌单和侧边栏） -->
     <div class="playlist-overlay" id="playlist-overlay"></div>
 
     <!-- 音乐播放器 -->
@@ -121,10 +150,17 @@
         <button class="playlist-item" data-src="独角.mp3" data-name="独角">🎵 独角</button>
     </div>
 
+    <!-- 右侧抽屉式文字区域与提示条 -->
+    <div class="sidebar-trigger" id="sidebar-trigger">✨ 你好世界</div>
+    <div class="content" id="content">
+        <h1>你好，世界</h1>
+        <p>人只有一次机会精彩活着，人只有一场生命尽情洒脱。</p>
+    </div>
+
     <!-- 音频标签 -->
     <audio id="bg-music" src="星炬不熄.mp3" preload="auto"></audio>
 
-    <!-- 音乐播放器 JS -->
+    <!-- 音乐播放器与页面交互 JS -->
     <script>
         window.addEventListener('load', function() {
             var audio = document.getElementById("bg-music"), 
@@ -134,7 +170,9 @@
                 playlist = document.getElementById("playlist"),
                 overlay = document.getElementById("playlist-overlay"), 
                 playlistItems = document.querySelectorAll(".playlist-item"),
-                splash = document.getElementById("splash-screen");
+                splash = document.getElementById("splash-screen"),
+                sidebarTrigger = document.getElementById("sidebar-trigger"),
+                content = document.getElementById("content");
 
             if (!audio) { console.error("未找到音频元素！"); return; }
 
@@ -174,16 +212,22 @@
                 audio.currentTime = 0; playlistItems[nextIndex].click();
             });
 
-            // 点击遮罩层收起歌单
+            // 点击遮罩层收起歌单和侧边栏
             overlay.addEventListener("click", function() { 
                 playlist.classList.remove("active"); 
+                content.classList.remove("active");
                 overlay.classList.remove("active"); 
             });
 
-            // --- 开屏动画逻辑 ---
-            // 2.5秒后自动淡出隐藏
+            // 右侧侧边栏交互逻辑
+            sidebarTrigger.addEventListener("click", function(e) { 
+                e.stopPropagation(); 
+                content.classList.toggle("active"); 
+                if (content.classList.contains("active")) { overlay.classList.add("active"); } 
+            });
+
+            // 开屏动画逻辑
             setTimeout(() => { if (splash) splash.classList.add('hidden'); }, 2500);
-            // 点击开屏动画可立即跳过并尝试播放音乐（解决手机浏览器自动播放限制）
             if (splash) {
                 splash.addEventListener('click', function() {
                     splash.classList.add('hidden');
@@ -193,7 +237,7 @@
         });
     </script>
 
-    <!-- 修复后的星空特效 JS -->
+    <!-- 星空特效 JS -->
     <script>
         const STAR_COLOR = '#fff', STAR_SIZE = 3, STAR_MIN_SCALE = 0.2, OVERFLOW_THRESHOLD = 50;
         const STAR_COUNT = (window.innerWidth + window.innerHeight) / 8;
@@ -204,7 +248,6 @@
         generate(); resize(); step();
         
         window.onresize = resize;
-        // 改用 addEventListener 提高兼容性，并修复手机端反向移动的 Bug
         window.addEventListener('mousemove', onmousemove);
         window.addEventListener('touchmove', ontouchmove, { passive: false });
         window.addEventListener('touchend', onmouseleave);
@@ -249,7 +292,6 @@
         function movepointer(x, y) {
             if (typeof pointerX === 'number' && typeof pointerY === 'number') {
                 let ox = x - pointerX; let oy = y - pointerY;
-                // 修复手机端滑动反向的 Bug：手机端 (touchInput=true) 乘以 1，电脑端乘以 -1
                 velocity.tx = velocity.tx + (ox / 8) * scale * (touchInput ? 1 : -1);
                 velocity.ty = velocity.ty + (oy / 8) * scale * (touchInput ? 1 : -1);
             }
