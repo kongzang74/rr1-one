@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title></title>
+    <title>星空音乐与交错相册</title>
     <style>
         * { padding: 0; margin: 0; box-sizing: border-box; }
         body, html { width: 100%; height: 100%; overflow: hidden; font-family: Arial, sans-serif; }
@@ -15,6 +15,25 @@
 
         /* 星空 Canvas 放在最底层 */
         canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+
+        /* --- 开屏动画样式 --- */
+        #splash-screen {
+            position: fixed; inset: 0;
+            background: linear-gradient(-45deg, #fbc2eb, #a6c1ee, #c2e9fb, #e0c3fc, #f6d365);
+            background-size: 400% 400%;
+            animation: rainbowFlow 3s ease infinite; 
+            z-index: 9999; display: flex; justify-content: center; align-items: center;
+            transition: opacity 0.8s ease-out;
+        }
+        #splash-screen h1 {
+            font-size: 72px; font-weight: bold; margin: 0; padding: 0 20px; text-align: center; line-height: 1.2;
+            background: linear-gradient(-45deg, #fff, #fbc2eb, #fff);
+            background-size: 400% 400%; -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent; color: transparent;
+            animation: rainbowFlow 3s ease infinite;
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+        }
+        @keyframes rainbowFlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
         /* 右上角毛玻璃音乐播放器 */
         .music-player {
@@ -72,7 +91,7 @@
         }
         .sidebar-trigger:hover { background: rgba(255, 255, 255, 0.35); padding-right: 15px; }
 
-        /* --- 新增：底部画廊触发条 --- */
+        /* --- 底部画廊触发条 --- */
         .gallery-trigger {
             position: fixed; bottom: 0; left: 0; width: 100%; padding: 15px 0;
             background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
@@ -82,18 +101,16 @@
         }
         .gallery-trigger:hover { background: rgba(255, 255, 255, 0.2); }
 
-        /* --- 新增：全屏交错画廊 --- */
+        /* --- 全屏交错画廊 --- */
         .gallery-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0, 0, 0, 0.85); z-index: 103;
-            overflow-y: auto; /* 允许画廊内部滚动 */
-            display: flex; justify-content: center;
+            overflow-y: auto; display: flex; justify-content: center;
             opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
         }
         .gallery-overlay.active { opacity: 1; pointer-events: auto; }
         .gallery-grid {
-            display: flex; gap: 20px; width: 90%; max-width: 1600px;
-            padding: 60px 0; /* 上下留出空间 */
+            display: flex; gap: 20px; width: 90%; max-width: 1600px; padding: 60px 0;
         }
         .g-col { flex: 1; display: flex; flex-direction: column; gap: 20px; will-change: transform; }
         .g-col img {
@@ -102,7 +119,6 @@
             transition: transform 0.4s ease, box-shadow 0.4s ease; cursor: pointer;
         }
         .g-col img:hover { transform: scale(1.05); box-shadow: 0 15px 30px rgba(255,255,255,0.2); z-index: 10; position: relative; }
-        /* 错落感布局 */
         .g-col:nth-child(1) { margin-top: -100px; }
         .g-col:nth-child(2) { margin-top: 50px; }
         .g-col:nth-child(3) { margin-top: 0px; }
@@ -118,11 +134,15 @@
             h1 { font-size: 32px !important; } p { font-size: 15px; line-height: 1.6; }
             .sidebar-trigger { padding: 20px 12px; font-size: 15px; letter-spacing: 6px; border-radius: 16px 0 0 16px; }
             .gallery-grid { gap: 10px; padding: 40px 0; }
-            .g-col:nth-child(4), .g-col:nth-child(5) { display: none; } /* 手机端隐藏最后两列 */
+            .g-col:nth-child(4), .g-col:nth-child(5) { display: none; } 
+            #splash-screen h1 { font-size: 48px; }
         }
     </style>
 </head>
 <body>
+    <!-- 开屏动画 -->
+    <div id="splash-screen"><h1>嗨咯</h1></div>
+
     <canvas></canvas>
     <div class="playlist-overlay" id="playlist-overlay"></div>
 
@@ -145,43 +165,29 @@
         <p>人只有一次机会精彩活着，人只有一场生命尽情洒脱。</p>
     </div>
 
-    <!-- 新增：底部触发条与全屏画廊 -->
+    <!-- 底部触发条与全屏画廊 -->
     <div class="gallery-trigger" id="gallery-trigger">✨</div>
     <div class="gallery-overlay" id="gallery-overlay">
         <div class="gallery-grid">
-            <div class="g-col" id="g-col-1">
-                <img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo">
-                <img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo">
-            </div>
-            <div class="g-col" id="g-col-2">
-                <img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo">
-                <img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo">
-            </div>
-            <div class="g-col" id="g-col-3">
-                <img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo">
-                <img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo">
-            </div>
-            <div class="g-col" id="g-col-4">
-                <img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo">
-                <img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo">
-            </div>
-            <div class="g-col" id="g-col-5">
-                <img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo">
-                <img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo">
-            </div>
+            <div class="g-col" id="g-col-1"><img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo"></div>
+            <div class="g-col" id="g-col-2"><img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo"></div>
+            <div class="g-col" id="g-col-3"><img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo"></div>
+            <div class="g-col" id="g-col-4"><img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo"></div>
+            <div class="g-col" id="g-col-5"><img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo"></div>
         </div>
     </div>
 
     <audio id="bg-music" src="星炬不熄.mp3" preload="auto"></audio>
 
     <script>
-        // --- 原有音乐与抽屉交互逻辑 ---
+        // --- 1. 页面交互逻辑 ---
         window.addEventListener('load', function() {
             var audio = document.getElementById("bg-music"), player = document.getElementById("music-player"),
                 playBtn = document.getElementById("play-btn"), songTitle = document.getElementById("song-title"),
                 playlist = document.getElementById("playlist"), overlay = document.getElementById("playlist-overlay"), 
                 playlistItems = document.querySelectorAll(".playlist-item"),
-                sidebarTrigger = document.getElementById("sidebar-trigger"), content = document.getElementById("content");
+                sidebarTrigger = document.getElementById("sidebar-trigger"), content = document.getElementById("content"),
+                splash = document.getElementById("splash-screen");
 
             function playMusic() { audio.play().then(() => { playBtn.innerHTML = "⏸"; player.classList.remove("paused"); }).catch((e) => console.log("播放失败:", e)); }
             function pauseMusic() { audio.pause(); playBtn.innerHTML = "▶"; player.classList.add("paused"); }
@@ -206,18 +212,31 @@
 
             overlay.addEventListener("click", function() { playlist.classList.remove("active"); content.classList.remove("active"); overlay.classList.remove("active"); });
             sidebarTrigger.addEventListener("click", function(e) { e.stopPropagation(); content.classList.toggle("active"); if (content.classList.contains("active")) { playlist.classList.remove("active"); overlay.classList.remove("active"); } });
+
+                        // 【核心修复】：2.5秒后隐藏开屏动画，并彻底从DOM中移除它，防止挡住鼠标点击！
+            setTimeout(() => { 
+                if (splash) {
+                    splash.style.opacity = '0';
+                    setTimeout(() => {
+                        splash.remove(); // 彻底移除，不再阻挡页面交互
+                    }, 800); // 等待 0.8s 的过渡动画结束
+                }
+                playMusic(); // 尝试自动播放音乐
+            }, 2500);
         });
 
-        // --- 新增：画廊交互与视差滚动逻辑 ---
+        // --- 2. 画廊交互与视差滚动逻辑 ---
         const galleryTrigger = document.getElementById('gallery-trigger');
         const galleryOverlay = document.getElementById('gallery-overlay');
-        const gCol1 = document.getElementById('g-col-1'), gCol2 = document.getElementById('g-col-2'), 
-              gCol3 = document.getElementById('g-col-3'), gCol4 = document.getElementById('g-col-4'), gCol5 = document.getElementById('g-col-5');
+        const gCol1 = document.getElementById('g-col-1');
+        const gCol2 = document.getElementById('g-col-2');
+        const gCol3 = document.getElementById('g-col-3');
+        const gCol4 = document.getElementById('g-col-4');
+        const gCol5 = document.getElementById('g-col-5');
 
         galleryTrigger.addEventListener('click', () => galleryOverlay.classList.add('active'));
         galleryOverlay.addEventListener('click', (e) => { if (e.target === galleryOverlay) galleryOverlay.classList.remove('active'); });
 
-        // 监听画廊内部的滚动来实现视差
         galleryOverlay.addEventListener('scroll', () => {
             let scrollY = galleryOverlay.scrollTop;
             gCol1.style.transform = `translateY(${scrollY * -0.4}px)`;
@@ -227,7 +246,7 @@
             gCol3.style.transform = `translateY(${scrollY * 0.05}px)`;
         });
 
-        // --- 原有星空特效 JS ---
+        // --- 3. 星空特效 JS ---
         const STAR_COLOR = '#fff', STAR_SIZE = 3, STAR_MIN_SCALE = 0.2, OVERFLOW_THRESHOLD = 50;
         const STAR_COUNT = (window.innerWidth + window.innerHeight) / 8;
         const canvas = document.querySelector('canvas'), context = canvas.getContext('2d');
@@ -251,7 +270,6 @@
             }
             star.z = STAR_MIN_SCALE + Math.random() * (1 - STAR_MIN_SCALE);
             if (direction === 'l') { star.z = 0.1; star.x = Math.random() * width; star.y = Math.random() * height; }
-            else if (direction === 'l') { star.x = -OVERFLOW_THRESHOLD; star.y = height * Math.random(); }
             else if (direction === 'r') { star.x = width + OVERFLOW_THRESHOLD; star.y = height * Math.random(); }
             else if (direction === 't') { star.x = width * Math.random(); star.y = -OVERFLOW_THRESHOLD; }
             else if (direction === 'b') { star.x = width * Math.random(); star.y = height + OVERFLOW_THRESHOLD; }
