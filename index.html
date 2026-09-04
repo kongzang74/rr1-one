@@ -212,7 +212,13 @@
 
             overlay.addEventListener("click", function() { playlist.classList.remove("active"); content.classList.remove("active"); overlay.classList.remove("active"); });
             sidebarTrigger.addEventListener("click", function(e) { e.stopPropagation(); content.classList.toggle("active"); if (content.classList.contains("active")) { playlist.classList.remove("active"); overlay.classList.remove("active"); } });
-
+                        // 点击页面空白处收起侧边栏
+            document.addEventListener("click", function(e) {
+                // 如果点击的不是侧边栏触发按钮，且点击的也不是侧边栏内容区域
+                if (!content.contains(e.target) && !sidebarTrigger.contains(e.target)) {
+                    content.classList.remove("active");
+                }
+            });
                         // 【核心修复】：2.5秒后隐藏开屏动画，并彻底从DOM中移除它，防止挡住鼠标点击！
             setTimeout(() => { 
                 if (splash) {
