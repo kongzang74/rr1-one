@@ -6,12 +6,10 @@
     <title></title>
     <style>
         * { padding: 0; margin: 0; box-sizing: border-box; }
-        body, html { width: 100%; height: 100%; overflow: hidden; }
+        body, html { width: 100%; height: 100%; overflow: hidden; font-family: Arial, sans-serif; }
         
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            display: flex; justify-content: center; align-items: center;
             background-image: linear-gradient(-225deg, #231557 0%, #43107a 29%, #ff1361 100%);
         }
 
@@ -20,80 +18,96 @@
 
         /* 右上角毛玻璃音乐播放器 */
         .music-player {
-            position: fixed; 
-            top: calc(20px + env(safe-area-inset-top)); 
-            right: 20px; 
-            z-index: 100;
+            position: fixed; top: calc(20px + env(safe-area-inset-top)); right: 20px; z-index: 100;
             display: flex; align-items: center; padding: 10px 15px; border-radius: 30px;
-            background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(15px) saturate(1.5);
-            -webkit-backdrop-filter: blur(15px) saturate(1.5);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); 
+            background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(15px) saturate(1.5); -webkit-backdrop-filter: blur(15px) saturate(1.5);
+            border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); 
             transition: all 0.3s ease; cursor: pointer;
         }
         .music-player:active { transform: scale(0.95); }
-        
         .play-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0; margin-right: 12px; display: flex; align-items: center; }
         .song-info { display: flex; flex-direction: column; margin-right: 10px; }
         .song-title { font-size: 14px; font-weight: bold; color: white; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
-        /* 音乐律动条 */
         .music-bars { display: flex; align-items: flex-end; height: 15px; gap: 2px; }
         .bar { width: 3px; background: white; border-radius: 2px; animation: equalizer 1s ease-in-out infinite; }
         .bar:nth-child(1) { height: 60%; animation-delay: 0s; }
         .bar:nth-child(2) { height: 100%; animation-delay: 0.2s; }
         .bar:nth-child(3) { height: 40%; animation-delay: 0.4s; }
         .bar:nth-child(4) { height: 80%; animation-delay: 0.1s; }
-        
         .music-player.paused .bar { animation-play-state: paused; height: 20% !important; transition: height 0.3s; }
         @keyframes equalizer { 0%, 100% { height: 20%; } 50% { height: 100%; } }
 
         /* 歌曲列表 */
         .playlist-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 98; background: rgba(0, 0, 0, 0.3); opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .playlist-overlay.active { opacity: 1; pointer-events: auto; }
-        
         .playlist {
             position: fixed; top: calc(75px + env(safe-area-inset-top)); right: 20px; z-index: 99; width: 220px; 
-            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(20px) saturate(1.5);
-            -webkit-backdrop-filter: blur(20px) saturate(1.5);
+            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(20px) saturate(1.5); -webkit-backdrop-filter: blur(20px) saturate(1.5);
             border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.15); padding: 10px;
             display: flex; flex-direction: column; gap: 8px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
             opacity: 0; transform: translateY(-20px) scale(0.95); pointer-events: none;
             transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-origin: top right;
         }
         .playlist.active { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
-        
         .playlist-item { background: rgba(255, 255, 255, 0.1); border: none; border-radius: 8px; padding: 10px 12px; color: white; text-align: left; cursor: pointer; font-size: 13px; transition: background 0.2s; }
         .playlist-item:active { background: rgba(255, 255, 255, 0.3); } 
         .playlist-item.active { background: rgba(255, 255, 255, 0.5); font-weight: bold; }
 
-        /* --- 右侧抽屉式文字区域样式 --- */
+        /* 右侧抽屉式文字区域 */
         .content {
-            position: relative; z-index: 1; color: white;
-            text-align: center; font-family: Arial, sans-serif;
-            width: 80%; max-width: 400px;
-            padding: 100px 40px 50px; margin-right: 100px;
-            background: rgba(20, 20, 20, 0.3);
-            backdrop-filter: blur(15px) saturate(1.5);
-            -webkit-backdrop-filter: blur(15px) saturate(1.5);
-            border-radius: 20px;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+            position: relative; z-index: 1; color: white; text-align: center;
+            width: 80%; max-width: 400px; padding: 100px 40px 50px; margin-right: 100px;
+            background: rgba(20, 20, 20, 0.3); backdrop-filter: blur(15px) saturate(1.5); -webkit-backdrop-filter: blur(15px) saturate(1.5);
+            border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
             opacity: 0; transform: translateX(50px); pointer-events: none;
             transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
         .content.active { opacity: 1; transform: translateX(0); pointer-events: auto; }
-
         .sidebar-trigger {
             position: fixed; top: 50%; right: 0; transform: translateY(-50%); z-index: 101;
-            padding: 15px 10px; background: rgba(255, 255, 255, 0.15);
-            backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            padding: 15px 10px; background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
             border-radius: 12px 0 0 12px; border: 1px solid rgba(255, 255, 255, 0.2); border-right: none;
             color: white; cursor: pointer; writing-mode: vertical-rl; font-size: 14px; letter-spacing: 4px;
             box-shadow: -4px 0 15px rgba(0, 0, 0, 0.2); transition: all 0.3s ease; user-select: none;
         }
         .sidebar-trigger:hover { background: rgba(255, 255, 255, 0.35); padding-right: 15px; }
+
+        /* --- 新增：底部画廊触发条 --- */
+        .gallery-trigger {
+            position: fixed; bottom: 0; left: 0; width: 100%; padding: 15px 0;
+            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 255, 0.2); color: white; text-align: center;
+            font-size: 14px; letter-spacing: 4px; cursor: pointer; z-index: 102;
+            transition: all 0.3s ease; user-select: none;
+        }
+        .gallery-trigger:hover { background: rgba(255, 255, 255, 0.2); }
+
+        /* --- 新增：全屏交错画廊 --- */
+        .gallery-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(0, 0, 0, 0.85); z-index: 103;
+            overflow-y: auto; /* 允许画廊内部滚动 */
+            display: flex; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+        }
+        .gallery-overlay.active { opacity: 1; pointer-events: auto; }
+        .gallery-grid {
+            display: flex; gap: 20px; width: 90%; max-width: 1600px;
+            padding: 60px 0; /* 上下留出空间 */
+        }
+        .g-col { flex: 1; display: flex; flex-direction: column; gap: 20px; will-change: transform; }
+        .g-col img {
+            width: 100%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            object-fit: cover; aspect-ratio: 3/4; background-color: #333;
+            transition: transform 0.4s ease, box-shadow 0.4s ease; cursor: pointer;
+        }
+        .g-col img:hover { transform: scale(1.05); box-shadow: 0 15px 30px rgba(255,255,255,0.2); z-index: 10; position: relative; }
+        /* 错落感布局 */
+        .g-col:nth-child(1) { margin-top: -100px; }
+        .g-col:nth-child(2) { margin-top: 50px; }
+        .g-col:nth-child(3) { margin-top: 0px; }
+        .g-col:nth-child(4) { margin-top: 50px; }
+        .g-col:nth-child(5) { margin-top: -100px; }
 
         /* 手机端适配 */
         @media (max-width: 768px) {
@@ -103,37 +117,13 @@
             .content { width: 85%; max-width: none; margin-right: 0; padding: 110px 20px 40px; }
             h1 { font-size: 32px !important; } p { font-size: 15px; line-height: 1.6; }
             .sidebar-trigger { padding: 20px 12px; font-size: 15px; letter-spacing: 6px; border-radius: 16px 0 0 16px; }
+            .gallery-grid { gap: 10px; padding: 40px 0; }
+            .g-col:nth-child(4), .g-col:nth-child(5) { display: none; } /* 手机端隐藏最后两列 */
         }
-
-        /* --- 开屏动画样式 --- */
-        #splash-screen {
-            position: fixed; inset: 0;
-            background: linear-gradient(-45deg, #fbc2eb, #a6c1ee, #c2e9fb, #e0c3fc, #f6d365);
-            background-size: 400% 400%;
-            animation: rainbowFlow 3s ease infinite, splashFadeOut 2.5s ease-in-out forwards; 
-            z-index: 9999; display: flex; justify-content: center; align-items: center;
-            color: white; font-size: 24px; transition: opacity 1s ease-out;
-        }
-        #splash-screen h1 {
-            font-size: 72px; font-weight: bold; margin: 0; padding: 0 20px; text-align: center; line-height: 1.2;
-            background: linear-gradient(-45deg, #fbc2eb, #a6c1ee, #c2e9fb, #e0c3fc, #f6d365);
-            background-size: 400% 400%; -webkit-background-clip: text; background-clip: text;
-            -webkit-text-fill-color: transparent; color: transparent;
-            animation: rainbowFlow 3s ease infinite;
-            text-shadow: 0 0 10px rgba(255, 255, 255, 0.6), 0 0 20px rgba(255, 255, 255, 0.4);
-        }
-        @keyframes rainbowFlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
-        @keyframes splashFadeOut { 0% { opacity: 1; } 70% { opacity: 1; } 100% { opacity: 0; } }
-        #splash-screen.hidden { opacity: 0; pointer-events: none; }
     </style>
 </head>
 <body>
-    <!-- 开屏动画 -->
-    <div id="splash-screen"><h1>欢迎访问</h1></div>
-
     <canvas></canvas>
-
-    <!-- 遮罩层（点击空白处收起歌单和侧边栏） -->
     <div class="playlist-overlay" id="playlist-overlay"></div>
 
     <!-- 音乐播放器 -->
@@ -142,69 +132,71 @@
         <div class="song-info"><span class="song-title" id="song-title">默认背景音乐</span></div>
         <div class="music-bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
     </div>
-
-    <!-- 弹出式歌曲列表 -->
     <div class="playlist" id="playlist">
         <button class="playlist-item active" data-src="星炬不熄.mp3" data-name="星炬不熄">🎵 星炬不熄</button>
         <button class="playlist-item" data-src="远航星的告别.mp3" data-name="远航星的告别">🎵 远航星的告别</button>
         <button class="playlist-item" data-src="独角.mp3" data-name="独角">🎵 独角</button>
     </div>
 
-    <!-- 右侧抽屉式文字区域与提示条 -->
+    <!-- 右侧抽屉 -->
     <div class="sidebar-trigger" id="sidebar-trigger">✨ 你好世界</div>
     <div class="content" id="content">
         <h1>你好，世界</h1>
         <p>人只有一次机会精彩活着，人只有一场生命尽情洒脱。</p>
     </div>
 
-    <!-- 音频标签 -->
+    <!-- 新增：底部触发条与全屏画廊 -->
+    <div class="gallery-trigger" id="gallery-trigger">。。。</div>
+    <div class="gallery-overlay" id="gallery-overlay">
+        <div class="gallery-grid">
+            <div class="g-col" id="g-col-1">
+                <img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo">
+                <img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo">
+            </div>
+            <div class="g-col" id="g-col-2">
+                <img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo">
+                <img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo">
+            </div>
+            <div class="g-col" id="g-col-3">
+                <img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo">
+                <img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo">
+            </div>
+            <div class="g-col" id="g-col-4">
+                <img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo">
+                <img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo">
+            </div>
+            <div class="g-col" id="g-col-5">
+                <img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo">
+                <img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo">
+            </div>
+        </div>
+    </div>
+
     <audio id="bg-music" src="星炬不熄.mp3" preload="auto"></audio>
 
-    <!-- 音乐播放器与页面交互 JS -->
     <script>
+        // --- 原有音乐与抽屉交互逻辑 ---
         window.addEventListener('load', function() {
-            var audio = document.getElementById("bg-music"), 
-                player = document.getElementById("music-player"),
-                playBtn = document.getElementById("play-btn"), 
-                songTitle = document.getElementById("song-title"),
-                playlist = document.getElementById("playlist"),
-                overlay = document.getElementById("playlist-overlay"), 
+            var audio = document.getElementById("bg-music"), player = document.getElementById("music-player"),
+                playBtn = document.getElementById("play-btn"), songTitle = document.getElementById("song-title"),
+                playlist = document.getElementById("playlist"), overlay = document.getElementById("playlist-overlay"), 
                 playlistItems = document.querySelectorAll(".playlist-item"),
-                splash = document.getElementById("splash-screen"),
-                sidebarTrigger = document.getElementById("sidebar-trigger"),
-                content = document.getElementById("content");
+                sidebarTrigger = document.getElementById("sidebar-trigger"), content = document.getElementById("content");
 
-            if (!audio) { console.error("未找到音频元素！"); return; }
-
-            function playMusic() {
-                audio.play().then(() => { playBtn.innerHTML = "⏸"; player.classList.remove("paused"); }).catch((e) => console.log("播放失败:", e));
-            }
+            function playMusic() { audio.play().then(() => { playBtn.innerHTML = "⏸"; player.classList.remove("paused"); }).catch((e) => console.log("播放失败:", e)); }
             function pauseMusic() { audio.pause(); playBtn.innerHTML = "▶"; player.classList.add("paused"); }
 
-            // 播放/暂停按钮点击
-            playBtn.addEventListener("click", function(e) { 
-                e.stopPropagation(); 
-                if (audio.paused) { playMusic(); } else { pauseMusic(); } 
-            });
-
-            // 展开/收起歌单
+            playBtn.addEventListener("click", function(e) { e.stopPropagation(); if (audio.paused) playMusic(); else pauseMusic(); });
+            
             function togglePlaylist() { playlist.classList.toggle("active"); overlay.classList.toggle("active"); }
-            player.addEventListener("click", function(e) { 
-                if (e.target === playBtn || playBtn.contains(e.target)) return; 
-                togglePlaylist(); 
-            });
+            player.addEventListener("click", function(e) { if (e.target === playBtn || playBtn.contains(e.target)) return; togglePlaylist(); });
 
-            // 点击列表项切歌
             playlistItems.forEach(item => {
                 item.addEventListener("click", function() {
-                    playlistItems.forEach(i => i.classList.remove("active")); 
-                    this.classList.add("active");
-                    var src = this.getAttribute("data-src"), name = this.getAttribute("data-name");
-                    audio.src = src; songTitle.innerText = name; playMusic();
+                    playlistItems.forEach(i => i.classList.remove("active")); this.classList.add("active");
+                    audio.src = this.getAttribute("data-src"); songTitle.innerText = this.getAttribute("data-name"); playMusic();
                 });
             });
-
-            // 自动播放下一首
             audio.addEventListener('ended', function() {
                 let currentIndex = -1;
                 playlistItems.forEach((item, index) => { if (item.classList.contains('active')) currentIndex = index; });
@@ -212,33 +204,30 @@
                 audio.currentTime = 0; playlistItems[nextIndex].click();
             });
 
-            // 点击遮罩层收起歌单和侧边栏
-            overlay.addEventListener("click", function() { 
-                playlist.classList.remove("active"); 
-                content.classList.remove("active");
-                overlay.classList.remove("active"); 
-            });
-
-            // 右侧侧边栏交互逻辑
-            sidebarTrigger.addEventListener("click", function(e) { 
-                e.stopPropagation(); 
-                content.classList.toggle("active"); 
-                if (content.classList.contains("active")) { overlay.classList.add("active"); } 
-            });
-
-            // 开屏动画逻辑
-            setTimeout(() => { if (splash) splash.classList.add('hidden'); }, 2500);
-            if (splash) {
-                splash.addEventListener('click', function() {
-                    splash.classList.add('hidden');
-                    if (audio.paused) playMusic();
-                });
-            }
+            overlay.addEventListener("click", function() { playlist.classList.remove("active"); content.classList.remove("active"); overlay.classList.remove("active"); });
+            sidebarTrigger.addEventListener("click", function(e) { e.stopPropagation(); content.classList.toggle("active"); if (content.classList.contains("active")) { playlist.classList.remove("active"); overlay.classList.remove("active"); } });
         });
-    </script>
 
-    <!-- 星空特效 JS -->
-    <script>
+        // --- 新增：画廊交互与视差滚动逻辑 ---
+        const galleryTrigger = document.getElementById('gallery-trigger');
+        const galleryOverlay = document.getElementById('gallery-overlay');
+        const gCol1 = document.getElementById('g-col-1'), gCol2 = document.getElementById('g-col-2'), 
+              gCol3 = document.getElementById('g-col-3'), gCol4 = document.getElementById('g-col-4'), gCol5 = document.getElementById('g-col-5');
+
+        galleryTrigger.addEventListener('click', () => galleryOverlay.classList.add('active'));
+        galleryOverlay.addEventListener('click', (e) => { if (e.target === galleryOverlay) galleryOverlay.classList.remove('active'); });
+
+        // 监听画廊内部的滚动来实现视差
+        galleryOverlay.addEventListener('scroll', () => {
+            let scrollY = galleryOverlay.scrollTop;
+            gCol1.style.transform = `translateY(${scrollY * -0.4}px)`;
+            gCol5.style.transform = `translateY(${scrollY * -0.4}px)`;
+            gCol2.style.transform = `translateY(${scrollY * 0.2}px)`;
+            gCol4.style.transform = `translateY(${scrollY * 0.2}px)`;
+            gCol3.style.transform = `translateY(${scrollY * 0.05}px)`;
+        });
+
+        // --- 原有星空特效 JS ---
         const STAR_COLOR = '#fff', STAR_SIZE = 3, STAR_MIN_SCALE = 0.2, OVERFLOW_THRESHOLD = 50;
         const STAR_COUNT = (window.innerWidth + window.innerHeight) / 8;
         const canvas = document.querySelector('canvas'), context = canvas.getContext('2d');
@@ -246,14 +235,13 @@
         let velocity = { x: 0, y: 0, tx: 0, ty: 0, z: 0.0009 }, touchInput = false;
         
         generate(); resize(); step();
-        
         window.onresize = resize;
         window.addEventListener('mousemove', onmousemove);
         window.addEventListener('touchmove', ontouchmove, { passive: false });
         window.addEventListener('touchend', onmouseleave);
         window.addEventListener('mouseleave', onmouseleave);
 
-        function generate() { for (let i = 0; i < STAR_COUNT; i++) { stars.push({ x: 0, y: 0, z: STAR_MIN_SCALE + Math.random() * (1 - STAR_MIN_SCALE) }); } }
+        function generate() { for (let i = 0; i < STAR_COUNT; i++) stars.push({ x: 0, y: 0, z: STAR_MIN_SCALE + Math.random() * (1 - STAR_MIN_SCALE) }); }
         function placestar(star) { star.x = Math.random() * width; star.y = Math.random() * height; }
         function recyclestar(star) {
             let direction = 'z', vx = Math.abs(velocity.x), vy = Math.abs(velocity.y);
