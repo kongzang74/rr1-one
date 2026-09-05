@@ -10,7 +10,7 @@
         
         body {
             display: flex; justify-content: center; align-items: center;
-            background: #0a0a2e;
+            background: linear-gradient(-225deg, #0c0c3d 0%, #1a1a5e 30%, #2d1b69 100%);
         }
 
         canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
@@ -135,15 +135,13 @@
             .content { width: 85%; max-width: none; margin-right: 0; padding: 110px 20px 40px; }
             h1 { font-size: 32px !important; } p { font-size: 15px; line-height: 1.6; }
             .sidebar-trigger { padding: 20px 12px; font-size: 15px; letter-spacing: 6px; border-radius: 16px 0 0 16px; }
-            .gallery-grid { gap: 10px; padding: 40px 0; flex-direction: row; overflow: hidden; }
+            .gallery-grid { gap: 8px; padding: 40px 0; display: block; columns: 3; column-gap: 8px; }
              
             #splash-screen h1 { font-size: 48px; }
             /* 手机端：每列独立滚动 */
-            .g-col { flex: 1; overflow-y: auto; height: 100vh; -webkit-overflow-scrolling: touch; }
-            .g-col::-webkit-scrollbar { width: 4px; }
-            .g-col::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.3); border-radius: 2px; }
-            /* 手机端取消交错边距，每列从顶部开始 */
-            .g-col:nth-child(1), .g-col:nth-child(2), .g-col:nth-child(3), .g-col:nth-child(4), .g-col:nth-child(5) { margin-top: 0 !important; }
+            .g-col { display: inline-block; width: 100%; break-inside: avoid; margin-top: 0 !important; }
+            .g-col img, .g-col .video-card { break-inside: avoid; width: 100%; }
+            .g-col::-webkit-scrollbar { display: none; }
         }
     
         .lightbox-overlay {
@@ -794,15 +792,15 @@
 
             if (hour >= 6 && hour < 12) {
                 // 上午：暖金色调
-                bgGradient = 'linear-gradient(-225deg, #f5af19 0%, #f12711 50%, #f5af19 100%)';
+                bgGradient = 'linear-gradient(-225deg, #0c0c3d 0%, #1a1a5e 30%, #2d1b69 100%)';
                 starColor = '#FFD700';
             } else if (hour >= 12 && hour < 18) {
                 // 下午：橙红色调
-                bgGradient = 'linear-gradient(-225deg, #ff9a9e 0%, #fad0c4 30%, #ff9a9e 100%)';
+                bgGradient = 'linear-gradient(-225deg, #0c0c3d 0%, #1a1a5e 30%, #2d1b69 100%)';
                 starColor = '#FF6B6B';
             } else if (hour >= 18 && hour < 22) {
                 // 傍晚：深蓝紫调
-                bgGradient = 'linear-gradient(-225deg, #2d3436 0%, #636e72 30%, #2d3436 100%)';
+                bgGradient = 'linear-gradient(-225deg, #0c0c3d 0%, #1a1a5e 30%, #2d1b69 100%)';
                 starColor = '#a8c0ff';
             } else {
                 // 深夜 (22-6)：深紫罗兰调
