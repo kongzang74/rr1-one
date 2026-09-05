@@ -13,10 +13,8 @@
             background-image: linear-gradient(-225deg, #231557 0%, #43107a 29%, #ff1361 100%);
         }
 
-        /* 星空 Canvas 放在最底层 */
         canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
 
-        /* --- 开屏动画样式 --- */
         #splash-screen {
             position: fixed; inset: 0;
             background: linear-gradient(-45deg, #fbc2eb, #a6c1ee, #c2e9fb, #e0c3fc, #f6d365);
@@ -35,7 +33,6 @@
         }
         @keyframes rainbowFlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        /* 右上角毛玻璃音乐播放器 */
         .music-player {
             position: fixed; top: calc(20px + env(safe-area-inset-top)); right: 20px; z-index: 100;
             display: flex; align-items: center; padding: 10px 15px; border-radius: 30px;
@@ -56,7 +53,6 @@
         .music-player.paused .bar { animation-play-state: paused; height: 20% !important; transition: height 0.3s; }
         @keyframes equalizer { 0%, 100% { height: 20%; } 50% { height: 100%; } }
 
-        /* 歌曲列表 */
         .playlist-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 98; background: rgba(0, 0, 0, 0.3); opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
         .playlist-overlay.active { opacity: 1; pointer-events: auto; }
         .playlist {
@@ -72,7 +68,6 @@
         .playlist-item:active { background: rgba(255, 255, 255, 0.3); } 
         .playlist-item.active { background: rgba(255, 255, 255, 0.5); font-weight: bold; }
 
-        /* 右侧抽屉式文字区域 */
         .content {
             position: relative; z-index: 1; color: white; text-align: center;
             width: 80%; max-width: 400px; padding: 100px 40px 50px; margin-right: 100px;
@@ -91,7 +86,6 @@
         }
         .sidebar-trigger:hover { background: rgba(255, 255, 255, 0.35); padding-right: 15px; }
 
-        /* --- 底部画廊触发条 --- */
         .gallery-trigger {
             position: fixed; bottom: 0; left: 0; width: 100%; padding: 15px 0;
             background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
@@ -101,7 +95,6 @@
         }
         .gallery-trigger:hover { background: rgba(255, 255, 255, 0.2); }
 
-        /* --- 全屏交错画廊 --- */
         .gallery-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0, 0, 0, 0.85); z-index: 103;
@@ -113,17 +106,26 @@
             display: flex; gap: 20px; width: 90%; max-width: 1600px; padding: 60px 0;
         }
         .g-col { flex: 1; display: flex; flex-direction: column; gap: 20px; will-change: transform; }
-        .g-col img {
+        .g-col img, .g-col video {
             width: 100%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             object-fit: cover; aspect-ratio: 3/4; background-color: #333;
             transition: transform 0.4s ease, box-shadow 0.4s ease; cursor: pointer;
         }
-        .g-col img:hover { transform: scale(1.05); box-shadow: 0 15px 30px rgba(255,255,255,0.2); z-index: 10; position: relative; }
+        .g-col img:hover, .g-col video:hover { transform: scale(1.05); box-shadow: 0 15px 30px rgba(255,255,255,0.2); z-index: 10; position: relative; }
         .g-col:nth-child(1) { margin-top: -100px; }
         .g-col:nth-child(2) { margin-top: 50px; }
         .g-col:nth-child(3) { margin-top: 0px; }
         .g-col:nth-child(4) { margin-top: 50px; }
         .g-col:nth-child(5) { margin-top: -100px; }
+
+        /* 视频卡片样式（与原始文件一致） */
+        .video-card { position: relative; }
+        .video-card video { border: 2px solid rgba(255,255,255,0.3); }
+        .play-icon-overlay {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            font-size: 48px; color: white; opacity: 0.8; pointer-events: none;
+            text-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
 
         /* 手机端适配 */
         @media (max-width: 768px) {
@@ -137,19 +139,50 @@
             .g-col:nth-child(4), .g-col:nth-child(5) { display: none; } 
             #splash-screen h1 { font-size: 48px; }
         }
+    
+        .lightbox-overlay {
+            position: fixed; inset: 0;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            z-index: 10000;
+            display: none; justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 0.3s ease;
+        }
+        .lightbox-overlay.active {
+            display: flex; opacity: 1;
+        }
+        .lightbox-overlay img {
+            max-width: 90vw; max-height: 90vh;
+            border-radius: 8px;
+            box-shadow: 0 0 40px rgba(255,255,255,0.2);
+            transform: scale(0.85);
+            transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .lightbox-overlay.active img {
+            transform: scale(1);
+        }
+        .lightbox-overlay video {
+            max-width: 90vw; max-height: 90vh;
+            border-radius: 8px;
+            box-shadow: 0 0 40px rgba(255,255,255,0.2);
+            transform: scale(0.85);
+            transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .lightbox-overlay.active video {
+            transform: scale(1);
+        }
     </style>
 </head>
 <body>
-    <!-- 开屏动画 -->
     <div id="splash-screen"><h1>嗨咯</h1></div>
 
     <canvas></canvas>
     <div class="playlist-overlay" id="playlist-overlay"></div>
 
-    <!-- 音乐播放器 -->
     <div class="music-player paused" id="music-player">
         <button class="play-btn" id="play-btn">▶</button>
-        <div class="song-info"><span class="song-title" id="song-title">默认背景音乐</span></div>
+        <div class="song-info"><span class="song-title" id="song-title"></span></div>
         <div class="music-bars"><div class="bar"></div><div class="bar"></div><div class="bar"></div><div class="bar"></div></div>
     </div>
     <div class="playlist" id="playlist">
@@ -158,106 +191,284 @@
         <button class="playlist-item" data-src="独角.mp3" data-name="独角">🎵 独角</button>
     </div>
 
-    <!-- 右侧抽屉 -->
-    <div class="sidebar-trigger" id="sidebar-trigger">✨ 你好世界</div>
+    <div class="sidebar-trigger" id="sidebar-trigger">✨</div>
     <div class="content" id="content">
-        <h1>你好，世界</h1>
-        <p>人只有一次机会精彩活着，人只有一场生命尽情洒脱。</p>
+        <h1></h1>
+        <p></p>
     </div>
 
-    <!-- 底部触发条与全屏画廊 -->
     <div class="gallery-trigger" id="gallery-trigger">✨</div>
     <div class="gallery-overlay" id="gallery-overlay">
         <div class="gallery-grid">
-            <div class="g-col" id="g-col-1"><img src="./img/01.jpg" alt="Photo"><img src="./img/02.jpg" alt="Photo"><img src="./img0/03.jpg" alt="Photo"><img src="./img0/04.jpg" alt="Photo"></div>
-            <div class="g-col" id="g-col-2"><img src="./img0/05.jpg" alt="Photo"><img src="./img2/06.jpg" alt="Photo"><img src="./img2/07.jpg" alt="Photo"><img src="./img5/08.jpg" alt="Photo"></div>
-            <div class="g-col" id="g-col-3"><img src="./img5/09.jpg" alt="Photo"><img src="./img6/10.jpg" alt="Photo"><img src="./img3/12.jpg" alt="Photo"><img src="./img3/13.jpg" alt="Photo"></div>
-            <div class="g-col" id="g-col-4"><img src="./img3/14.jpg" alt="Photo"><img src="./img3/15.jpg" alt="Photo"><img src="./img4/16.jpg" alt="Photo"><img src="./img4/17.jpg" alt="Photo"></div>
-            <div class="g-col" id="g-col-5"><img src="./img3/11.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo"><img src="./img/01.jpg" alt="Photo"></div>
+            <div class="g-col" id="g-col-1">
+                <!-- 视频1：放在照片前面 -->
+                <div class="video-card" data-type="video" data-src="./hhh/1.mp4">
+                    <video muted loop playsinline autoplay>
+                        <source src="./hhh/1.mp4" type="video/mp4">
+                    </video>
+                    <div class="play-icon-overlay">▶</div>
+                </div>
+                <img src="./img/01.jpg" alt="Photo">
+                <img src="./img/02.jpg" alt="Photo">
+                <img src="./img0/03.jpg" alt="Photo">
+                <img src="./img0/04.jpg" alt="Photo">
+            </div>
+            <div class="g-col" id="g-col-2">
+                <!-- 视频2 -->
+                <div class="video-card" data-type="video" data-src="./hhh/2.mp4">
+                    <video muted loop playsinline autoplay>
+                        <source src="./hhh/2.mp4" type="video/mp4">
+                    </video>
+                    <div class="play-icon-overlay">▶</div>
+                </div>
+                <img src="./img0/05.jpg" alt="Photo">
+                <img src="./img2/06.jpg" alt="Photo">
+                <img src="./img2/07.jpg" alt="Photo">
+                <img src="./img5/08.jpg" alt="Photo">
+            </div>
+            <div class="g-col" id="g-col-3">
+                <!-- 视频3 -->
+                <div class="video-card" data-type="video" data-src="./hhh/3.mp4">
+                    <video muted loop playsinline autoplay>
+                        <source src="./hhh/3.mp4" type="video/mp4">
+                    </video>
+                    <div class="play-icon-overlay">▶</div>
+                </div>
+                <img src="./img5/09.jpg" alt="Photo">
+                <img src="./img6/10.jpg" alt="Photo">
+                <img src="./img3/12.jpg" alt="Photo">
+                <img src="./img3/13.jpg" alt="Photo">
+            </div>
+            <div class="g-col" id="g-col-4">
+                <!-- 视频4 -->
+                <div class="video-card" data-type="video" data-src="./hhh/4.mp4">
+                    <video muted loop playsinline autoplay>
+                        <source src="./hhh/4.mp4" type="video/mp4">
+                    </video>
+                    <div class="play-icon-overlay">▶</div>
+                </div>
+                <img src="./img3/14.jpg" alt="Photo">
+                <img src="./img3/15.jpg" alt="Photo">
+                <img src="./img4/16.jpg" alt="Photo">
+                <img src="./img4/17.jpg" alt="Photo">
+            </div>
+            <div class="g-col" id="g-col-5">
+                <!-- 视频5 -->
+                <div class="video-card" data-type="video" data-src="./hhh/5.mp4">
+                    <video muted loop playsinline autoplay>
+                        <source src="./hhh/5.mp4" type="video/mp4">
+                    </video>
+                    <div class="play-icon-overlay">▶</div>
+                </div>
+                <img src="./img3/11.jpg" alt="Photo">
+                <img src="./img/01.jpg" alt="Photo">
+                <img src="./img/01.jpg" alt="Photo">
+                <img src="./img/01.jpg" alt="Photo">
+            </div>
         </div>
+    </div>
+
+    <div class="lightbox-overlay" id="lightbox-overlay">
+        <img id="lightbox-img" src="" alt="放大图片" style="display:none;">
+        <video id="lightbox-video" controls style="display:none;"></video>
     </div>
 
     <audio id="bg-music" src="星炬不熄.mp3" preload="auto"></audio>
 
     <script>
-        // --- 1. 页面交互逻辑 ---
         window.addEventListener('load', function() {
-            var audio = document.getElementById("bg-music"), player = document.getElementById("music-player"),
-                playBtn = document.getElementById("play-btn"), songTitle = document.getElementById("song-title"),
-                playlist = document.getElementById("playlist"), overlay = document.getElementById("playlist-overlay"), 
+            var audio = document.getElementById("bg-music"),
+                player = document.getElementById("music-player"),
+                playBtn = document.getElementById("play-btn"),
+                songTitle = document.getElementById("song-title"),
+                playlist = document.getElementById("playlist"),
+                overlay = document.getElementById("playlist-overlay"),
                 playlistItems = document.querySelectorAll(".playlist-item"),
-                sidebarTrigger = document.getElementById("sidebar-trigger"), content = document.getElementById("content"),
-                splash = document.getElementById("splash-screen");
+                sidebarTrigger = document.getElementById("sidebar-trigger"),
+                content = document.getElementById("content"),
+                splash = document.getElementById("splash-screen"),
+                lightboxOverlay = document.getElementById("lightbox-overlay"),
+                lightboxImg = document.getElementById("lightbox-img"),
+                lightboxVideo = document.getElementById("lightbox-video");
 
-            function playMusic() { audio.play().then(() => { playBtn.innerHTML = "⏸"; player.classList.remove("paused"); }).catch((e) => console.log("播放失败:", e)); }
-            function pauseMusic() { audio.pause(); playBtn.innerHTML = "▶"; player.classList.add("paused"); }
+            function playMusic() {
+                audio.play().then(function() {
+                    playBtn.innerHTML = "⏸";
+                    player.classList.remove("paused");
+                }).catch(function(e) { console.log("播放失败:", e); });
+            }
+            function pauseMusic() {
+                audio.pause();
+                playBtn.innerHTML = "▶";
+                player.classList.add("paused");
+            }
 
-            playBtn.addEventListener("click", function(e) { e.stopPropagation(); if (audio.paused) playMusic(); else pauseMusic(); });
+            playBtn.addEventListener("click", function(e) {
+                e.stopPropagation();
+                if (audio.paused) playMusic();
+                else pauseMusic();
+            });
             
-            function togglePlaylist() { playlist.classList.toggle("active"); overlay.classList.toggle("active"); }
-            player.addEventListener("click", function(e) { if (e.target === playBtn || playBtn.contains(e.target)) return; togglePlaylist(); });
+            function togglePlaylist() {
+                playlist.classList.toggle("active");
+                overlay.classList.toggle("active");
+            }
+            player.addEventListener("click", function(e) {
+                if (e.target === playBtn || playBtn.contains(e.target)) return;
+                togglePlaylist();
+            });
 
-            playlistItems.forEach(item => {
+            playlistItems.forEach(function(item) {
                 item.addEventListener("click", function() {
-                    playlistItems.forEach(i => i.classList.remove("active")); this.classList.add("active");
-                    audio.src = this.getAttribute("data-src"); songTitle.innerText = this.getAttribute("data-name"); playMusic();
+                    playlistItems.forEach(function(i) { i.classList.remove("active"); });
+                    this.classList.add("active");
+                    audio.src = this.getAttribute("data-src");
+                    songTitle.innerText = this.getAttribute("data-name");
+                    playMusic();
                 });
             });
             audio.addEventListener('ended', function() {
-                let currentIndex = -1;
-                playlistItems.forEach((item, index) => { if (item.classList.contains('active')) currentIndex = index; });
-                let nextIndex = (currentIndex + 1) % playlistItems.length;
-                audio.currentTime = 0; playlistItems[nextIndex].click();
+                var currentIndex = -1;
+                playlistItems.forEach(function(item, index) {
+                    if (item.classList.contains('active')) currentIndex = index;
+                });
+                var nextIndex = (currentIndex + 1) % playlistItems.length;
+                audio.currentTime = 0;
+                playlistItems[nextIndex].click();
             });
 
-            overlay.addEventListener("click", function() { playlist.classList.remove("active"); content.classList.remove("active"); overlay.classList.remove("active"); });
-            sidebarTrigger.addEventListener("click", function(e) { e.stopPropagation(); content.classList.toggle("active"); if (content.classList.contains("active")) { playlist.classList.remove("active"); overlay.classList.remove("active"); } });
-                        // 点击页面空白处收起侧边栏
+            overlay.addEventListener("click", function() {
+                playlist.classList.remove("active");
+                content.classList.remove("active");
+                overlay.classList.remove("active");
+            });
+            sidebarTrigger.addEventListener("click", function(e) {
+                e.stopPropagation();
+                content.classList.toggle("active");
+                if (content.classList.contains("active")) {
+                    playlist.classList.remove("active");
+                    overlay.classList.remove("active");
+                }
+            });
+
             document.addEventListener("click", function(e) {
-                // 如果点击的不是侧边栏触发按钮，且点击的也不是侧边栏内容区域
                 if (!content.contains(e.target) && !sidebarTrigger.contains(e.target)) {
                     content.classList.remove("active");
                 }
             });
-                        // 【核心修复】：2.5秒后隐藏开屏动画，并彻底从DOM中移除它，防止挡住鼠标点击！
-            setTimeout(() => { 
+
+            // --- 灯箱逻辑 ---
+            function openLightboxMedia(src, type) {
+                lightboxImg.style.display = 'none';
+                lightboxVideo.style.display = 'none';
+                lightboxVideo.pause();
+                lightboxVideo.src = '';
+
+                if (type === 'video') {
+                    lightboxVideo.src = src;
+                    lightboxVideo.style.display = 'block';
+                    lightboxVideo.play();
+                } else {
+                    lightboxImg.src = src;
+                    lightboxImg.style.display = 'block';
+                }
+                lightboxOverlay.classList.add('active');
+            }
+
+            function closeLightbox() {
+                lightboxOverlay.classList.remove('active');
+                lightboxVideo.pause();
+                lightboxVideo.src = '';
+                setTimeout(function() { lightboxImg.src = ''; }, 300);
+            }
+
+            // 给所有画廊图片绑定点击事件
+            document.querySelectorAll('.g-col img').forEach(function(img) {
+                img.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    openLightboxMedia(this.src, 'image');
+                });
+            });
+
+            // 视频卡片自动播放控制
+            document.querySelectorAll('.video-card video').forEach(function(vid) {
+                vid.addEventListener('play', function() {
+                    this.parentElement.querySelector('.play-icon-overlay').style.display = 'none';
+                });
+                vid.addEventListener('pause', function() {
+                    this.parentElement.querySelector('.play-icon-overlay').style.display = 'block';
+                });
+                vid.addEventListener('ended', function() {
+                    this.parentElement.querySelector('.play-icon-overlay').style.display = 'block';
+                });
+            });
+
+            // 视频卡片点击放大
+            document.querySelectorAll('.video-card').forEach(function(card) {
+                card.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    var videoSrc = this.getAttribute('data-src');
+                    openLightboxMedia(videoSrc, 'video');
+                });
+            });
+
+            lightboxOverlay.addEventListener('click', function(e) {
+                if (e.target === lightboxOverlay) {
+                    closeLightbox();
+                }
+            });
+
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && lightboxOverlay.classList.contains('active')) {
+                    closeLightbox();
+                }
+            });
+
+            // 开屏动画
+            setTimeout(function() { 
                 if (splash) {
                     splash.style.opacity = '0';
-                    setTimeout(() => {
-                        splash.remove(); // 彻底移除，不再阻挡页面交互
-                    }, 800); // 等待 0.8s 的过渡动画结束
+                    setTimeout(function() {
+                        splash.remove();
+                    }, 800);
                 }
-                playMusic(); // 尝试自动播放音乐
+                playMusic();
             }, 2500);
         });
 
-        // --- 2. 画廊交互与视差滚动逻辑 ---
-        const galleryTrigger = document.getElementById('gallery-trigger');
-        const galleryOverlay = document.getElementById('gallery-overlay');
-        const gCol1 = document.getElementById('g-col-1');
-        const gCol2 = document.getElementById('g-col-2');
-        const gCol3 = document.getElementById('g-col-3');
-        const gCol4 = document.getElementById('g-col-4');
-        const gCol5 = document.getElementById('g-col-5');
+        // --- 画廊视差滚动 ---
+        var galleryTrigger = document.getElementById('gallery-trigger');
+        var galleryOverlay = document.getElementById('gallery-overlay');
+        var gCol1 = document.getElementById('g-col-1');
+        var gCol2 = document.getElementById('g-col-2');
+        var gCol3 = document.getElementById('g-col-3');
+        var gCol4 = document.getElementById('g-col-4');
+        var gCol5 = document.getElementById('g-col-5');
 
-        galleryTrigger.addEventListener('click', () => galleryOverlay.classList.add('active'));
-        galleryOverlay.addEventListener('click', (e) => { if (e.target === galleryOverlay) galleryOverlay.classList.remove('active'); });
-
-        galleryOverlay.addEventListener('scroll', () => {
-            let scrollY = galleryOverlay.scrollTop;
-            gCol1.style.transform = `translateY(${scrollY * -0.4}px)`;
-            gCol5.style.transform = `translateY(${scrollY * -0.4}px)`;
-            gCol2.style.transform = `translateY(${scrollY * 0.2}px)`;
-            gCol4.style.transform = `translateY(${scrollY * 0.2}px)`;
-            gCol3.style.transform = `translateY(${scrollY * 0.05}px)`;
+        galleryTrigger.addEventListener('click', function() {
+            galleryOverlay.classList.add('active');
+        });
+        galleryOverlay.addEventListener('click', function(e) {
+            if (e.target === galleryOverlay) {
+                galleryOverlay.classList.remove('active');
+            }
         });
 
-        // --- 3. 星空特效 JS ---
-        const STAR_COLOR = '#fff', STAR_SIZE = 3, STAR_MIN_SCALE = 0.2, OVERFLOW_THRESHOLD = 50;
-        const STAR_COUNT = (window.innerWidth + window.innerHeight) / 8;
-        const canvas = document.querySelector('canvas'), context = canvas.getContext('2d');
-        let scale = 1, width, height, stars = [], pointerX, pointerY;
-        let velocity = { x: 0, y: 0, tx: 0, ty: 0, z: 0.0009 }, touchInput = false;
+        galleryOverlay.addEventListener('scroll', function() {
+            var scrollY = galleryOverlay.scrollTop;
+            gCol1.style.transform = 'translateY(' + (scrollY * -0.4) + 'px)';
+            gCol5.style.transform = 'translateY(' + (scrollY * -0.4) + 'px)';
+            gCol2.style.transform = 'translateY(' + (scrollY * 0.2) + 'px)';
+            gCol4.style.transform = 'translateY(' + (scrollY * 0.2) + 'px)';
+            gCol3.style.transform = 'translateY(' + (scrollY * 0.05) + 'px)';
+        });
+
+        // --- 星空特效 ---
+        var STAR_COLOR = '#fff', STAR_SIZE = 3, STAR_MIN_SCALE = 0.2, OVERFLOW_THRESHOLD = 50;
+        var STAR_COUNT = (window.innerWidth + window.innerHeight) / 8;
+        var canvas = document.querySelector('canvas'), context = canvas.getContext('2d');
+        var scale = 1, width, height, stars = [], pointerX, pointerY;
+        var velocity = { x: 0, y: 0, tx: 0, ty: 0, z: 0.0009 }, touchInput = false;
         
         generate(); resize(); step();
         window.onresize = resize;
@@ -266,52 +477,101 @@
         window.addEventListener('touchend', onmouseleave);
         window.addEventListener('mouseleave', onmouseleave);
 
-        function generate() { for (let i = 0; i < STAR_COUNT; i++) stars.push({ x: 0, y: 0, z: STAR_MIN_SCALE + Math.random() * (1 - STAR_MIN_SCALE) }); }
-        function placestar(star) { star.x = Math.random() * width; star.y = Math.random() * height; }
+        function generate() {
+            for (var i = 0; i < STAR_COUNT; i++) {
+                stars.push({ x: 0, y: 0, z: STAR_MIN_SCALE + Math.random() * (1 - STAR_MIN_SCALE) });
+            }
+        }
+        function placestar(star) {
+            star.x = Math.random() * width;
+            star.y = Math.random() * height;
+        }
         function recyclestar(star) {
-            let direction = 'z', vx = Math.abs(velocity.x), vy = Math.abs(velocity.y);
+            var direction = 'z', vx = Math.abs(velocity.x), vy = Math.abs(velocity.y);
             if (vx > 1 || vy > 1) {
-                let axis = vx > vy ? (Math.random() < vx / (vx + vy) ? 'h' : 'v') : (Math.random() < vy / (vx + vy) ? 'v' : 'h');
+                var axis = vx > vy ? (Math.random() < vx / (vx + vy) ? 'h' : 'v') : (Math.random() < vy / (vx + vy) ? 'v' : 'h');
                 direction = axis === 'h' ? (velocity.x > 0 ? 'l' : 'r') : (velocity.y > 0 ? 't' : 'b');
             }
             star.z = STAR_MIN_SCALE + Math.random() * (1 - STAR_MIN_SCALE);
-            if (direction === 'l') { star.z = 0.1; star.x = Math.random() * width; star.y = Math.random() * height; }
-            else if (direction === 'r') { star.x = width + OVERFLOW_THRESHOLD; star.y = height * Math.random(); }
-            else if (direction === 't') { star.x = width * Math.random(); star.y = -OVERFLOW_THRESHOLD; }
-            else if (direction === 'b') { star.x = width * Math.random(); star.y = height + OVERFLOW_THRESHOLD; }
+            if (direction === 'l') {
+                star.z = 0.1; star.x = Math.random() * width; star.y = Math.random() * height;
+            } else if (direction === 'r') {
+                star.x = width + OVERFLOW_THRESHOLD; star.y = height * Math.random();
+            } else if (direction === 't') {
+                star.x = width * Math.random(); star.y = -OVERFLOW_THRESHOLD;
+            } else if (direction === 'b') {
+                star.x = width * Math.random(); star.y = height + OVERFLOW_THRESHOLD;
+            }
         }
-        function resize() { scale = window.devicePixelRatio || 1; width = window.innerWidth * scale; height = window.innerHeight * scale; canvas.width = width; canvas.height = height; stars.forEach(placestar); }
-        function step() { context.clearRect(0, 0, width, height); update(); render(); requestAnimationFrame(step); }
+        function resize() {
+            scale = window.devicePixelRatio || 1;
+            width = window.innerWidth * scale;
+            height = window.innerHeight * scale;
+            canvas.width = width;
+            canvas.height = height;
+            stars.forEach(placestar);
+        }
+        function step() {
+            context.clearRect(0, 0, width, height);
+            update();
+            render();
+            requestAnimationFrame(step);
+        }
         function update() {
-            velocity.tx *= 0.96; velocity.ty *= 0.96; velocity.x += (velocity.tx - velocity.x) * 0.8; velocity.y += (velocity.ty - velocity.y) * 0.8;
-            stars.forEach((star) => {
-                star.x += velocity.x * star.z; star.y += velocity.y * star.z;
-                star.x += (star.x - width / 2) * velocity.z * star.z; star.y += (star.y - height / 2) * velocity.z * star.z;
+            velocity.tx *= 0.96;
+            velocity.ty *= 0.96;
+            velocity.x += (velocity.tx - velocity.x) * 0.8;
+            velocity.y += (velocity.ty - velocity.y) * 0.8;
+            stars.forEach(function(star) {
+                star.x += velocity.x * star.z;
+                star.y += velocity.y * star.z;
+                star.x += (star.x - width / 2) * velocity.z * star.z;
+                star.y += (star.y - height / 2) * velocity.z * star.z;
                 star.z += velocity.z;
-                if (star.x < -OVERFLOW_THRESHOLD || star.x > width + OVERFLOW_THRESHOLD || star.y < -OVERFLOW_THRESHOLD || star.y > height + OVERFLOW_THRESHOLD) { recyclestar(star); }
+                if (star.x < -OVERFLOW_THRESHOLD || star.x > width + OVERFLOW_THRESHOLD ||
+                    star.y < -OVERFLOW_THRESHOLD || star.y > height + OVERFLOW_THRESHOLD) {
+                    recyclestar(star);
+                }
             });
         }
         function render() {
-            stars.forEach((star) => {
-                context.beginPath(); context.lineCap = 'round'; context.lineWidth = STAR_SIZE * star.z * scale;
-                context.globalAlpha = 0.5 + 0.5 * Math.random(); context.strokeStyle = STAR_COLOR;
+            stars.forEach(function(star) {
+                context.beginPath();
+                context.lineCap = 'round';
+                context.lineWidth = STAR_SIZE * star.z * scale;
+                context.globalAlpha = 0.5 + 0.5 * Math.random();
+                context.strokeStyle = STAR_COLOR;
                 context.moveTo(star.x, star.y);
-                let tailx = velocity.x * 2, tailY = velocity.y * 2;
-                if (Math.abs(tailx) < 0.1) tailx = 0.5; if (Math.abs(tailY) < 0.1) tailY = 0.5;
-                context.lineTo(star.x + tailx, star.y + tailY); context.stroke();
+                var tailx = velocity.x * 2, tailY = velocity.y * 2;
+                if (Math.abs(tailx) < 0.1) tailx = 0.5;
+                if (Math.abs(tailY) < 0.1) tailY = 0.5;
+                context.lineTo(star.x + tailx, star.y + tailY);
+                context.stroke();
             });
         }
         function movepointer(x, y) {
             if (typeof pointerX === 'number' && typeof pointerY === 'number') {
-                let ox = x - pointerX; let oy = y - pointerY;
+                var ox = x - pointerX;
+                var oy = y - pointerY;
                 velocity.tx = velocity.tx + (ox / 8) * scale * (touchInput ? 1 : -1);
                 velocity.ty = velocity.ty + (oy / 8) * scale * (touchInput ? 1 : -1);
             }
-            pointerX = x; pointerY = y;
+            pointerX = x;
+            pointerY = y;
         }
-        function onmousemove(event) { touchInput = false; movepointer(event.clientX, event.clientY); }
-        function ontouchmove(event) { touchInput = true; movepointer(event.touches[0].clientX, event.touches[0].clientY); event.preventDefault(); }
-        function onmouseleave() { pointerX = null; pointerY = null; }
+        function onmousemove(event) {
+            touchInput = false;
+            movepointer(event.clientX, event.clientY);
+        }
+        function ontouchmove(event) {
+            touchInput = true;
+            movepointer(event.touches[0].clientX, event.touches[0].clientY);
+            event.preventDefault();
+        }
+        function onmouseleave() {
+            pointerX = null;
+            pointerY = null;
+        }
     </script>
 </body>
 </html>
