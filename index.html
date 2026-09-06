@@ -679,7 +679,10 @@ function onPointerDown(e) {
     var target = e.target;
     if (target !== lightboxImg && target !== lightboxVideo) return;
     
-    e.preventDefault();
+    // 仅在鼠标事件中阻止默认行为（防止文本选中/图片拖拽），touch事件在onMove中处理
+    if (e.type === 'mousedown') {
+        e.preventDefault();
+    }
     e.stopPropagation();
     
     var clientX, clientY;
@@ -693,7 +696,7 @@ function onPointerDown(e) {
     
     var startX = clientX;
     var startY = clientY;
-    var isDragging = false;
+    var isDragging = true;
     var hasSwiped = false;
     var swipeDist = 0;
     
@@ -727,6 +730,7 @@ function onPointerDown(e) {
     };
     
     var onUp = function(ev) {
+        // 确保标记为未拖拽状态
         isDragging = false;
         
         // 移除全局监听
