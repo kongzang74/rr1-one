@@ -58,9 +58,11 @@ canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -
   animation: rotateCCW calc(var(--rotate-speed) * 1s) var(--easing) infinite;
   cursor: pointer;
   transition: box-shadow 0.2s, transform 0.2s, background 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  outline: 0;
 }
 .rotating-nav .card:hover {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.25);
   box-shadow: 0px 6px 18px rgba(0, 0, 0, 0.25);
   transform: translateY(-50%) scale(1.08);
 }
@@ -116,6 +118,20 @@ canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -
   z-index: 8; pointer-events: none; background: transparent;
 }
 
+
+/* 中心点击遮罩 - 防止点击中间区域误触发音乐 */
+.center-click-blocker {
+  position: absolute;
+  width: 160px;
+  height: 160px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: transparent;
+  z-index: 11;
+  pointer-events: auto;
+  border-radius: 50%;
+}
 /* ============ 星空主页基础样式 ============ */
 #splash-screen {
   position: fixed; inset: 0;
@@ -526,13 +542,14 @@ body.fullscreen-exit .video-overlay { z-index: 9999; }
         </li>
         <li>
           <div class="card" data-action="test">
-            <span>测试</span>
+          <img src="hh/1.gif" alt="视频">
+            <span></span>
           </div>
         </li>
         <li>
           <div class="card" data-action="design">
-            <img src="hh/1.gif" alt="设计">
-            <span>设计</span>
+            <img src="hh/1.gif" alt="视频">
+            <span></span>
           </div>
         </li>
         <li>
@@ -544,13 +561,14 @@ body.fullscreen-exit .video-overlay { z-index: 9999; }
         <li>
           <div class="card" data-action="code">
             <img src="hh/1.gif" alt="代码">
-            <span>代码</span>
+            <span></span>
           </div>
         </li>
       </ul>
     </div>
   </div>
-</div>
+
+    <div class="center-click-blocker"></div></div>
 
 <!-- ============ 星空主页内容 ============ -->
 <div id="splash-screen"><h1>嗨咯</h1><div id="splash-hint">点击跳过</div></div>
@@ -798,12 +816,12 @@ var rotatingNav = document.getElementById('rotating-nav');
 // ============ 音乐播放器逻辑（来自 yy2.html） ============
 (function() {
   const playlist = [
-    { title: "晨曦微光", artist: "玻璃城市", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", cover: "https://picsum.photos/id/1015/300/300", lyrics: "清晨第一缕阳光 · 透过玻璃窗 · 温暖洒在脸上" },
-    { title: "午后咖啡", artist: "LoFi Dream", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", cover: "https://picsum.photos/id/106/300/300", lyrics: "一杯咖啡的时光 · 慵懒的午后 · 思绪飘向远方" },
-    { title: "星河漫步", artist: "Cosmic Drift", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", cover: "https://picsum.photos/id/1025/300/300", lyrics: "漫步在星河之间 · 微光闪烁的夜晚 · 你的眼眸像星辰" },
-    { title: "雨后森林", artist: "Nature Beats", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", cover: "https://picsum.photos/id/1043/300/300", lyrics: "雨滴落在树叶上 · 空气里弥漫清香 · 脚步轻轻走过" },
-    { title: "城市霓虹", artist: "Neon Lights", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", cover: "https://picsum.photos/id/1047/300/300", lyrics: "霓虹灯闪烁的街 · 夜色温柔如水 · 人群川流不息" },
-    { title: "海浪之声", artist: "Ocean Wave", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3", cover: "https://picsum.photos/id/1049/300/300", lyrics: "海浪拍打岸边 · 海风轻拂脸庞 · 忘掉所有烦恼" },
+    { title: "且听风吟", artist: "", src: "https://music.163.com/song/media/outer/url?id=3405074868.mp3", cover: "https://picsum.photos/id/106/300/300", lyrics: "清晨第一缕阳光 · 透过玻璃窗 · 温暖洒在脸上" },
+    { title: "故风吟游之地", artist: "", src: "https://music.163.com/song/media/outer/url?id=2667716744.mp3", cover: "https://picsum.photos/id/106/300/300", lyrics: "一杯咖啡的时光 · 慵懒的午后 · 思绪飘向远方" },
+    { title: "独角", artist: "", src: "独角.mp3", cover: "https://picsum.photos/id/1025/300/300", lyrics: "漫步在星河之间 · 微光闪烁的夜晚 · 你的眼眸像星辰" },
+    { title: "星炬不熄", artist: "", src: "星炬不熄.mp3", cover: "https://picsum.photos/id/1043/300/300", lyrics: "雨滴落在树叶上 · 空气里弥漫清香 · 脚步轻轻走过" },
+    { title: "远航星的告别", artist: "", src: "远航星的告别.mp3", cover: "https://picsum.photos/id/1047/300/300", lyrics: "霓虹灯闪烁的街 · 夜色温柔如水 · 人群川流不息" },
+    { title: "肘我", artist: "", src: "https://music.163.com/song/media/outer/url?id=3379043419.mp3", cover: "https://picsum.photos/id/1049/300/300", lyrics: "海浪拍打岸边 · 海风轻拂脸庞 · 忘掉所有烦恼" },
     { title: "秋日私语", artist: "Autumn Leaf", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3", cover: "https://picsum.photos/id/1051/300/300", lyrics: "落叶铺满小径 · 秋天悄悄来临 · 思念随风飘散" },
     { title: "冬日暖阳", artist: "Winter Sun", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3", cover: "https://picsum.photos/id/1055/300/300", lyrics: "冬日的阳光 · 温暖而珍贵 · 像你的拥抱" },
     { title: "樱花雨", artist: "Sakura", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3", cover: "https://picsum.photos/id/1059/300/300", lyrics: "樱花飘落的速度 · 是每秒五厘米 · 美好稍纵即逝" },
@@ -1090,6 +1108,10 @@ var rotatingNav = document.getElementById('rotating-nav');
     var zBtn = document.getElementById('lightbox-zoom-btn');
     if (zBtn) zBtn.classList.remove('visible');
     setTimeout(function() { lightboxImg.src = ''; }, 300);
+    // 灯箱关闭后恢复视频栏中所有视频的自动播放
+    document.querySelectorAll('.video-overlay video').forEach(function(v) {
+      v.play().catch(function(){});
+    });
   }
 
   // 视频点击打开灯箱
@@ -1351,7 +1373,7 @@ var rotatingNav = document.getElementById('rotating-nav');
 
 // ============ 打字机标题 ============
 (function() {
-  var typewriterText = " ✨";
+  var typewriterText = "(ﾉ*･ω･)ﾉ✨";
   var typewriterEl = document.getElementById('typewriter-title');
   var typewriterCursor = document.getElementById('typewriter-cursor');
   var charIndex = 0;
