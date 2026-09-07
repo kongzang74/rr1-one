@@ -1,1398 +1,1592 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title></title>
-    <style>
-        * { padding: 0; margin: 0; box-sizing: border-box; }
-        body, html { width: 100%; height: 100%; overflow: hidden; font-family: Arial, sans-serif; }
-        
-        body {
-            display: flex; justify-content: center; align-items: center;
-            background: linear-gradient(-225deg, #0c0c3d 0%, #1a1a5e 30%, #2d1b69 100%);
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, shrink-to-fit=no">
+<title></title>
+<style>
+* { padding: 0; margin: 0; box-sizing: border-box; }
+body, html { width: 100%; height: 100%; overflow: hidden; font-family: 'Inter', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif; }
+body {
+  display: flex; justify-content: center; align-items: center;
+  background: linear-gradient(-225deg, #0c0c3d 0%, #1a1a5e 30%, #2d1b69 100%);
+}
+canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
 
-        canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
+/* ============ Rotating Cards - 左上角小型导航 ============ */
+.rotating-nav {
+  position: fixed; top: 30px; left: 30px; width: 260px; height: 260px;
+  z-index: 200; cursor: default; transition: opacity 0.3s ease;
+}
+.gallery-overlay.active ~ .rotating-nav,
+.video-overlay.active ~ .rotating-nav {
+  opacity: 0; pointer-events: none;
+}
 
-        #splash-screen {
-            position: fixed; inset: 0;
-            background: linear-gradient(-45deg, #fbc2eb, #a6c1ee, #c2e9fb, #e0c3fc, #f6d365);
-            background-size: 400% 400%;
-            animation: rainbowFlow 3s ease infinite; 
-            z-index: 9999; display: flex; justify-content: center; align-items: center;
-            transition: opacity 0.8s ease-out;
-        }
-        #splash-screen h1 {
-            font-size: 72px; font-weight: bold; margin: 0; padding: 0 20px; text-align: center; line-height: 1.2;
-            background: linear-gradient(-45deg, #fff, #fbc2eb, #fff);
-            background-size: 400% 400%; -webkit-background-clip: text; background-clip: text;
-            -webkit-text-fill-color: transparent; color: transparent;
-            animation: rainbowFlow 3s ease infinite;
-            text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
-        }
-        #splash-hint {
-            position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.8); font-size: 14px; letter-spacing: 2px;
-            animation: pulse 1.5s ease-in-out infinite;
-        }
-        @keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
-        @keyframes rainbowFlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+.rotating-nav .void { width: 100%; height: 100%; position: relative; }
+.rotating-nav .crop {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 6;
+  -webkit-mask-image: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,1) 55%, rgba(0,0,0,1) 100%);
+  mask-image: linear-gradient(90deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0) 40%, rgba(0,0,0,1) 55%, rgba(0,0,0,1) 100%);
+}
+.rotating-nav ul.card-list {
+  --rotate-speed: 30; --count: 6;
+  --easing: cubic-bezier(0.000, 0.37, 1.000, 0.63);
+  list-style-type: none; margin: 0; padding: 0;
+  position: relative; width: 100%; height: 100%; z-index: 1;
+}
+.rotating-nav ul.card-list:hover * { animation-play-state: paused; }
+.rotating-nav li {
+  position: absolute; top: 50%; left: 50%;
+  transform-origin: center center; width: 100%;
+  animation: rotateCW calc(var(--rotate-speed) * 1s) var(--easing) infinite;
+}
+.rotating-nav .card {
+  position: absolute; left: 5%; top: 50%;
+  transform: translateY(-50%); width: 22%;
+  display: flex; flex-direction: column; align-items: center;
+  padding: 8px 10px; gap: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px) saturate(1.5);
+  -webkit-backdrop-filter: blur(10px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+  border-radius: 10px;
+  font: 400 10px 'Arial', sans-serif;
+  color: #535062;
+  animation: rotateCCW calc(var(--rotate-speed) * 1s) var(--easing) infinite;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.2s, background 0.2s;
+}
+.rotating-nav .card:hover {
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: 0px 6px 18px rgba(0, 0, 0, 0.25);
+  transform: translateY(-50%) scale(1.08);
+}
+.rotating-nav .card img { width: 100%; border-radius: 6px; aspect-ratio: 1 / 1; object-fit: cover; }
+.rotating-nav .card span {
+  font-weight: 500; font-size: 11px; line-height: 150%;
+  color: #fff; display: block; text-align: center;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+}
+.rotating-nav li:nth-child(2), .rotating-nav li:nth-child(2) .card { animation-delay: calc((var(--rotate-speed) / var(--count)) * -1s); }
+.rotating-nav li:nth-child(3), .rotating-nav li:nth-child(3) .card { animation-delay: calc((var(--rotate-speed) / var(--count)) * -2s); }
+.rotating-nav li:nth-child(4), .rotating-nav li:nth-child(4) .card { animation-delay: calc((var(--rotate-speed) / var(--count)) * -3s); }
+.rotating-nav li:nth-child(5), .rotating-nav li:nth-child(5) .card { animation-delay: calc((var(--rotate-speed) / var(--count)) * -4s); }
+.rotating-nav li:nth-child(6), .rotating-nav li:nth-child(6) .card { animation-delay: calc((var(--rotate-speed) / var(--count)) * -5s); }
 
-        .music-player {
-            position: fixed; top: calc(20px + env(safe-area-inset-top)); right: 20px; z-index: 100;
-            display: flex; align-items: center; padding: 10px 15px; border-radius: 30px;
-            background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(15px) saturate(1.5); -webkit-backdrop-filter: blur(15px) saturate(1.5);
-            border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); 
-            transition: all 0.3s ease; cursor: pointer;
-        }
-        .music-player:active { transform: scale(0.95); }
-        .play-btn { background: none; border: none; color: white; font-size: 24px; cursor: pointer; padding: 0; margin-right: 12px; display: flex; align-items: center; }
-        .song-info { display: flex; flex-direction: column; margin-right: 10px; }
-        .song-title { font-size: 14px; font-weight: bold; color: white; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .music-bars { display: flex; align-items: flex-end; height: 15px; gap: 2px; }
-        .bar { width: 3px; background: white; border-radius: 2px; animation: equalizer 1s ease-in-out infinite; }
-        .bar:nth-child(1) { height: 60%; animation-delay: 0s; }
-        .bar:nth-child(2) { height: 100%; animation-delay: 0.2s; }
-        .bar:nth-child(3) { height: 40%; animation-delay: 0.4s; }
-        .bar:nth-child(4) { height: 80%; animation-delay: 0.1s; }
-        .music-player.paused .bar { animation-play-state: paused; height: 20% !important; transition: height 0.3s; }
-        @keyframes equalizer { 0%, 100% { height: 20%; } 50% { height: 100%; } }
+@keyframes rotateCW { from { transform: translate(-50%, -50%) rotate(0deg); } to { transform: translate(-50%, -50%) rotate(360deg); } }
+@keyframes rotateCCW { from { transform: translateY(-50%) rotate(0deg); } to { transform: translateY(-50%) rotate(-360deg); } }
 
-        .playlist-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 98; background: rgba(0, 0, 0, 0.3); opacity: 0; pointer-events: none; transition: opacity 0.3s ease; }
-        .playlist-overlay.active { opacity: 1; pointer-events: auto; }
-        .playlist {
-            position: fixed; top: calc(75px + env(safe-area-inset-top)); right: 20px; z-index: 99; width: 220px; 
-            background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(20px) saturate(1.5); -webkit-backdrop-filter: blur(20px) saturate(1.5);
-            border-radius: 15px; border: 1px solid rgba(255, 255, 255, 0.15); padding: 10px;
-            display: flex; flex-direction: column; gap: 8px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            opacity: 0; transform: translateY(-20px) scale(0.95); pointer-events: none;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); transform-origin: top right;
-        }
-        .playlist.active { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
-        .playlist-item { background: rgba(255, 255, 255, 0.1); border: none; border-radius: 8px; padding: 10px 12px; color: white; text-align: left; cursor: pointer; font-size: 13px; transition: background 0.2s; }
-        .playlist-item:active { background: rgba(255, 255, 255, 0.3); } 
-        .playlist-item.active { background: rgba(255, 255, 255, 0.5); font-weight: bold; }
+.rotating-nav .center-circle {
+  position: absolute; width: 60px; height: 60px;
+  left: 50%; top: 50%; transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px) saturate(1.5);
+  -webkit-backdrop-filter: blur(10px) saturate(1.5);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.2);
+  border-radius: 50%; z-index: 10;
+}
+.rotating-nav .second-circle {
+  position: absolute; width: 40%; height: 40%;
+  left: 50%; top: 50%; transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(6px) saturate(1.2);
+  -webkit-backdrop-filter: blur(6px) saturate(1.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.15);
+  background-image: url(hh/1.gif); background-size: cover; background-position: center; z-index: 5;
+}
+.rotating-nav .last-circle {
+  position: absolute; width: 66%; height: 66%;
+  left: 50%; top: 50%; transform: translate(-50%, -50%);
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(4px) saturate(1.1);
+  -webkit-backdrop-filter: blur(4px) saturate(1.1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 50%;
+  box-shadow: 0px 8px 20px rgba(0, 0, 0, 0.1);
+  background-image: url(hh/1.gif); background-size: cover; background-position: center; z-index: 3;
+}
+.rotating-nav .mask-ring {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 8; pointer-events: none; background: transparent;
+}
 
-        .content {
-            position: relative; z-index: 1; color: white; text-align: center;
-            width: 80%; max-width: 400px; padding: 100px 40px 50px; margin-right: 100px;
-            background: rgba(20, 20, 20, 0.3); backdrop-filter: blur(15px) saturate(1.5); -webkit-backdrop-filter: blur(15px) saturate(1.5);
-            border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.2); box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-            opacity: 0; transform: translateX(50px); pointer-events: none;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .content.active { opacity: 1; transform: translateX(0); pointer-events: auto; }
-        .sidebar-trigger {
-            position: fixed; top: 50%; right: 0; transform: translateY(-50%); z-index: 101;
-            padding: 15px 10px; background: rgba(255, 255, 255, 0.15); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            border-radius: 12px 0 0 12px; border: 1px solid rgba(255, 255, 255, 0.2); border-right: none;
-            color: white; cursor: pointer; writing-mode: vertical-rl; font-size: 14px; letter-spacing: 4px;
-            box-shadow: -4px 0 15px rgba(0, 0, 0, 0.2); transition: all 0.3s ease; user-select: none;
-        }
-        .sidebar-trigger:hover { background: rgba(255, 255, 255, 0.35); padding-right: 15px; }
+/* ============ 星空主页基础样式 ============ */
+#splash-screen {
+  position: fixed; inset: 0;
+  background: linear-gradient(-45deg, #fbc2eb, #a6c1ee, #c2e9fb, #e0c3fc, #f6d365);
+  background-size: 400% 400%;
+  animation: rainbowFlow 3s ease infinite;
+  z-index: 9999; display: flex; justify-content: center; align-items: center;
+  transition: opacity 0.8s ease-out;
+}
+#splash-screen h1 {
+  font-size: 72px; font-weight: bold; margin: 0; padding: 0 20px; text-align: center; line-height: 1.2;
+  background: linear-gradient(-45deg, #fff, #fbc2eb, #fff);
+  background-size: 400% 400%; -webkit-background-clip: text; background-clip: text;
+  -webkit-text-fill-color: transparent; color: transparent;
+  animation: rainbowFlow 3s ease infinite;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.4);
+}
+#splash-hint {
+  position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.8); font-size: 14px; letter-spacing: 2px;
+  animation: pulse 1.5s ease-in-out infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 0.4; } 50% { opacity: 1; } }
+@keyframes rainbowFlow { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
-        .gallery-trigger {
-            position: fixed; bottom: 0; left: 0; width: 100%; padding: 15px 0;
-            background: rgba(255, 255, 255, 0.1); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-            border-top: 1px solid rgba(255, 255, 255, 0.2); color: white; text-align: center;
-            font-size: 14px; letter-spacing: 4px; cursor: pointer; z-index: 102;
-            transition: all 0.3s ease; user-select: none;
-        }
-        .gallery-trigger:hover { background: rgba(255, 255, 255, 0.2); }
+/* 内容面板 - 毛玻璃 */
+.content {
+  position: relative; z-index: 1; color: white; text-align: center;
+  width: 80%; max-width: 400px; padding: 100px 40px 50px; margin-right: 100px;
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
+  border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+  opacity: 0; transform: translateX(50px); pointer-events: none;
+  transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.content.active { opacity: 1; transform: translateX(0); pointer-events: auto; }
 
-        .gallery-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background: rgba(0, 0, 0, 0.85); z-index: 103;
-            overflow-y: auto; display: flex; justify-content: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
-        }
-        .gallery-overlay.active { opacity: 1; pointer-events: auto; }
-        .gallery-grid {
-            display: flex; gap: 20px; width: 90%; max-width: 1600px; padding: 60px 0;
-        }
-        .g-col { flex: 1; display: flex; flex-direction: column; gap: 20px; will-change: transform; }
-        .g-col img, .g-col video {
-            width: 100%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            object-fit: cover; aspect-ratio: 3/4; background-color: #333;
-            transition: transform 0.4s ease, box-shadow 0.4s ease; cursor: pointer;
-        }
-        .g-col img:hover, .g-col video:hover { transform: scale(1.05); box-shadow: 0 15px 30px rgba(255,255,255,0.2); z-index: 10; position: relative; }
-        .g-col:nth-child(1) { margin-top: -100px; }
-        .g-col:nth-child(2) { margin-top: 50px; }
-        .g-col:nth-child(3) { margin-top: 0px; }
-        .g-col:nth-child(4) { margin-top: 50px; }
-        .g-col:nth-child(5) { margin-top: -100px; }
+/* 侧边触发按钮 - 毛玻璃 */
+.sidebar-trigger {
+  position: fixed; top: 50%; right: 0; transform: translateY(-50%); z-index: 101;
+  padding: 15px 10px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(15px) saturate(1.5);
+  -webkit-backdrop-filter: blur(15px) saturate(1.5);
+  border-radius: 12px 0 0 12px; border: 1px solid rgba(255, 255, 255, 0.15); border-right: none;
+  color: white; cursor: pointer; writing-mode: vertical-rl; font-size: 14px; letter-spacing: 4px;
+  box-shadow: -4px 0 15px rgba(0, 0, 0, 0.15); transition: all 0.3s ease; user-select: none;
+}
+.sidebar-trigger:hover { background: rgba(255, 255, 255, 0.2); padding-right: 15px; }
 
-        /* 视频卡片样式（与原始文件一致） */
-        .video-card { position: relative; }
-        .video-card video { border: 2px solid rgba(255,255,255,0.3); }
-        .play-icon-overlay {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            font-size: 48px; color: white; opacity: 0.8; pointer-events: none;
-            text-shadow: 0 0 10px rgba(0,0,0,0.5);
-        }
+/* ============ 照片栏 ============ */
+.gallery-overlay {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.85); z-index: 103;
+  overflow-y: auto; display: flex; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+}
+.gallery-overlay.active { opacity: 1; pointer-events: auto; }
+.gallery-grid { display: flex; gap: 20px; width: 90%; max-width: 1600px; padding: 60px 0; }
+.g-col { flex: 1; display: flex; flex-direction: column; gap: 20px; will-change: transform; }
+.g-col img {
+  width: 100%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  object-fit: cover; aspect-ratio: 3/4; background-color: #333;
+  transition: transform 0.4s ease, box-shadow 0.4s ease; cursor: pointer;
+}
+.g-col img:hover { transform: scale(1.05); box-shadow: 0 15px 30px rgba(255,255,255,0.2); z-index: 10; position: relative; }
+.g-col:nth-child(1) { margin-top: -100px; }
+.g-col:nth-child(2) { margin-top: 50px; }
+.g-col:nth-child(3) { margin-top: 0px; }
+.g-col:nth-child(4) { margin-top: 50px; }
+.g-col:nth-child(5) { margin-top: -100px; }
 
-        /* 手机端适配 */
-        @media (max-width: 768px) {
-            .music-player { top: calc(15px + env(safe-area-inset-top)); right: 15px; padding: 8px 12px; }
-            .playlist { top: calc(70px + env(safe-area-inset-top)); right: 15px; width: 200px; }
-            .song-title { font-size: 13px; max-width: 120px; }
-            .content { width: 85%; max-width: none; margin-right: 0; padding: 110px 20px 40px; }
-            h1 { font-size: 32px !important; } p { font-size: 15px; line-height: 1.6; }
-            .sidebar-trigger { padding: 20px 12px; font-size: 15px; letter-spacing: 6px; border-radius: 16px 0 0 16px; }
-            .gallery-grid { gap: 8px; padding: 40px 0; display: block; columns: 3; column-gap: 8px; }
-             
-            #splash-screen h1 { font-size: 48px; }
-            /* 手机端：每列独立滚动 */
-            .g-col { display: inline-block; width: 100%; break-inside: avoid; margin-top: 0 !important; }
-            .g-col img, .g-col .video-card { break-inside: avoid; width: 100%; }
-            .g-col::-webkit-scrollbar { display: none; }
-        }
-    
-        .lightbox-overlay {
-            position: fixed; inset: 0;
-            background: rgba(0, 0, 0, 0.95);
-            touch-action: none;
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-            z-index: 10000;
-            display: none; justify-content: center; align-items: center;
-            opacity: 0; transition: opacity 0.3s ease;
-            overflow: hidden;
-        }
-        .lightbox-overlay.active {
-            
-            display: flex; opacity: 1;
-        }
-        .lightbox-overlay img,
-        .lightbox-overlay video {
-            --zoom-x: 50%;
-            --zoom-y: 50%;
+/* ============ 视频栏 ============ */
+.video-overlay {
+  position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+  background: rgba(0, 0, 0, 0.85); z-index: 103;
+  overflow-y: auto; display: flex; justify-content: center;
+  opacity: 0; pointer-events: none; transition: opacity 0.4s ease;
+}
+.video-overlay.active { opacity: 1; pointer-events: auto; }
+.video-grid { display: flex; gap: 20px; width: 90%; max-width: 1600px; padding: 60px 0; }
+.v-col { flex: 1; display: flex; flex-direction: column; gap: 20px; will-change: transform; }
+.v-col video {
+  width: 100%; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+  object-fit: cover; aspect-ratio: 3/4; background-color: #333;
+  transition: transform 0.4s ease, box-shadow 0.4s ease; cursor: pointer;
+}
+.v-col video:hover { transform: scale(1.05); box-shadow: 0 15px 30px rgba(255,255,255,0.2); z-index: 10; position: relative; }
+.v-col:nth-child(1) { margin-top: -100px; }
+.v-col:nth-child(2) { margin-top: 50px; }
+.v-col:nth-child(3) { margin-top: 0px; }
+.v-col:nth-child(4) { margin-top: 50px; }
+.v-col:nth-child(5) { margin-top: -100px; }
 
-            max-width: 90vw; max-height: 90vh;
-            border-radius: 8px;
-            box-shadow: 0 0 40px rgba(255,255,255,0.2);
-            transform: scale(0.85);
-            transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .lightbox-overlay.active img {
-            transform: scale(1);
-        }
-        .lightbox-overlay video {
-            max-width: 90vw; max-height: 90vh;
-            border-radius: 8px;
-            box-shadow: 0 0 40px rgba(255,255,255,0.2);
-            transform: scale(0.85);
-            transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-        .lightbox-overlay.active video {
-            transform: scale(1);
-        }
-        /* 灯箱图片/视频缩放样式 */
-    
-                /* --- 多層星空视差（三层星空） --- */
-        #starfield-layer-front { z-index: -2; }
-        #starfield-layer-mid { z-index: -3; }
-        #starfield-layer-back { z-index: -4; }
-        
-        /* --- 鼠标粒子拖尾 --- */
-        #particle-canvas {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 9998; pointer-events: none;
-        }
+/* ============ 音乐播放器浮层 ============ */
+.music-player-float {
+  position: fixed; top: 50%; left: 50%;
+  width: 380px; max-width: calc(100vw - 40px);
+  height: 85vh; max-height: 700px;
+  border-radius: 44px; overflow: hidden;
+  box-shadow: 0 45px 70px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.18);
+  z-index: 105;
+  opacity: 0; pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.95);
+  transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.music-player-float.active {
+  opacity: 1; pointer-events: auto;
+  transform: translate(-50%, -50%) scale(1);
+}
+.music-player-float .player-wrapper {
+  position: relative; width: 100%; height: 100%;
+  border-radius: 44px; overflow: hidden;
+}
+.music-player-float .background-image {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  object-fit: cover; background: #1e1e2f;
+  filter: brightness(0.85) saturate(1.2);
+  z-index: 0; pointer-events: none; user-select: none;
+}
+.music-player-float .glass-card {
+  position: relative; z-index: 2; width: 100%; height: 100%;
+  backdrop-filter: blur(30px) saturate(190%);
+  -webkit-backdrop-filter: blur(30px) saturate(190%);
+  background: rgba(18, 18, 28, 0.4);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.05) 100%);
+  box-shadow: inset 0 0 35px rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.32);
+  border-radius: 44px;
+  display: flex; flex-direction: column;
+  padding: 22px 20px 20px; color: white;
+  text-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+.music-player-float .time-display {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 12px; padding: 0 4px;
+}
+.music-player-float .current-time {
+  background: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  padding: 10px 18px; border-radius: 40px;
+  font-weight: 600; font-size: 1.2rem;
+  border: 1px solid rgba(255,255,255,0.3); letter-spacing: 0.5px;
+}
+.music-player-float .date-badge {
+  background: rgba(0,0,0,0.2);
+  backdrop-filter: blur(8px);
+  padding: 8px 16px; border-radius: 30px;
+  font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.25);
+}
+.music-player-float .cover-section { display: flex; justify-content: center; margin: 8px 0 14px; }
+.music-player-float .cover-art {
+  width: 180px; height: 180px; border-radius: 30px;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 22px 38px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.35);
+  object-fit: cover; transition: transform 0.25s;
+  cursor: pointer; pointer-events: auto;
+}
+.music-player-float .cover-art:active { transform: scale(0.96); }
+.music-player-float .song-info { text-align: center; margin: 8px 0 6px; }
+.music-player-float .song-title {
+  font-size: 1.6rem; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding: 0 8px;
+}
+.music-player-float .artist { font-size: 0.95rem; opacity: 0.8; margin-top: 4px; }
+.music-player-float .lyrics-container {
+  background: rgba(0, 0, 0, 0.25);
+  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  border-radius: 28px; padding: 14px 14px;
+  margin: 10px 0 8px; border: 1px solid rgba(255,255,255,0.3);
+  min-height: 70px; max-height: 100px;
+  display: flex; align-items: center; justify-content: center;
+  text-align: center; overflow-y: auto;
+}
+.music-player-float .lyrics-text {
+  font-size: 1rem; font-weight: 500; line-height: 1.5; opacity: 0.9;
+}
+.music-player-float .progress-area {
+  display: flex; align-items: center; gap: 10px; margin: 6px 0 8px;
+}
+.music-player-float .time-elapsed, .music-player-float .time-total {
+  font-size: 0.75rem; width: 36px; opacity: 0.85;
+}
+.music-player-float .progress-bar {
+  flex: 1; height: 5px;
+  background: rgba(255,255,255,0.22);
+  border-radius: 10px; overflow: hidden; cursor: pointer;
+}
+.music-player-float .progress-fill {
+  width: 0%; height: 100%;
+  background: white; border-radius: 10px;
+  box-shadow: 0 0 10px white; transition: width 0.08s linear;
+}
+.music-player-float .controls {
+  display: flex; align-items: center; justify-content: space-evenly;
+  margin: 4px 0 10px;
+}
+.music-player-float .ctrl-btn {
+  background: transparent; border: none; color: white;
+  font-size: 28px; width: 50px; height: 50px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; opacity: 0.85; transition: all 0.2s;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+  -webkit-tap-highlight-color: transparent; border-radius: 50%;
+  pointer-events: auto;
+}
+.music-player-float .ctrl-btn:active { opacity: 0.5; transform: scale(0.9); }
+.music-player-float .play-btn { font-size: 44px; width: 68px; height: 68px; opacity: 0.95; }
+.music-player-float .small-btn { font-size: 26px; }
+.music-player-float .playlist-toggle { display: flex; justify-content: center; margin: 6px 0 2px; }
+.music-player-float .list-btn {
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255,255,255,0.3);
+  border-radius: 30px; padding: 8px 24px;
+  color: white; font-weight: 500; font-size: 0.9rem;
+  cursor: pointer; display: flex; align-items: center; gap: 6px;
+  transition: 0.2s; letter-spacing: 0.5px; pointer-events: auto;
+}
+.music-player-float .list-btn:active { background: rgba(255,255,255,0.25); }
 
-/* --- 流星划过特效 --- */
-        #shooting-stars-canvas {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: -1; pointer-events: none;
-        }
+/* 歌单面板 */
+.music-player-float .playlist-panel {
+  position: absolute; bottom: 0; left: 0; width: 100%;
+  background: rgba(20, 20, 30, 0.75);
+  backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px);
+  border-top: 1px solid rgba(255,255,255,0.4);
+  border-radius: 30px 30px 0 0;
+  padding: 20px 16px 24px; z-index: 10;
+  transform: translateY(100%);
+  transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+  max-height: 55%; overflow-y: auto; color: white;
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+}
+.music-player-float .playlist-panel.open { transform: translateY(0); }
+.music-player-float .playlist-header {
+  display: flex; justify-content: space-between;
+  font-weight: 600; margin-bottom: 14px; font-size: 1.1rem;
+}
+.music-player-float .close-list {
+  background: none; border: none; color: white;
+  font-size: 24px; cursor: pointer; opacity: 0.8;
+}
+.music-player-float .song-item {
+  padding: 14px 12px; border-bottom: 1px solid rgba(255,255,255,0.15);
+  display: flex; justify-content: space-between; align-items: center;
+  cursor: pointer; border-radius: 14px; transition: background 0.2s;
+}
+.music-player-float .song-item.active { background: rgba(255,255,255,0.2); font-weight: 600; }
+.music-player-float .song-item:active { background: rgba(255,255,255,0.15); }
+.music-player-float .song-item-title { font-weight: 500; }
+.music-player-float .song-item-artist { font-size: 0.8rem; opacity: 0.7; }
 
-    
-/* --- 3D卡片倾斜 --- */
-        .g-col img, .g-col .video-card {
-            transition: transform 0.1s ease-out, filter 0.3s ease, box-shadow 0.3s ease;
-            transform-style: preserve-3d;
-            will-change: transform;
-        }
-        
-        /* --- 卡片聚焦模式 --- */
-        .g-col.focus-mode .g-card:not(:hover) {
-            filter: brightness(0.4) blur(3px);
-            transform: scale(0.95);
-        }
-        .g-col .g-card {
-            transition: filter 0.3s ease, transform 0.3s ease;
-        }
-        .g-col img, .g-col .video-card {
-            position: relative;
-        }
-        
-        /* --- 音频频谱条 --- */
-        .spectrum-container {
-            display: flex;
-            align-items: flex-end;
-            height: 20px;
-            gap: 1px;
-            margin-left: 8px;
-        }
-        .spectrum-bar {
-            width: 2px;
-            background: white;
-            border-radius: 1px;
-            transition: height 0.05s ease;
-            min-height: 2px;
-        }
-        
-        /* --- 磁吸按钮 --- */
-        .magnetic-btn {
-            transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-        
-        /* --- 打字机标题光标 --- */
-        .typewriter-cursor {
-            display: inline-block;
-            width: 2px;
-            height: 1em;
-            background: white;
-            margin-left: 2px;
-            animation: blink 0.7s infinite;
-            vertical-align: text-bottom;
-        }
-        @keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
-        
-        /* --- 全屏沉浸模式 --- */
-        body.fullscreen-exit .music-player,
-        body.fullscreen-exit .playlist,
-        body.fullscreen-exit .playlist-overlay,
-        body.fullscreen-exit .sidebar-trigger,
-        body.fullscreen-exit .gallery-trigger,
-        body.fullscreen-exit .content {
-            opacity: 0;
-            pointer-events: none;
-        }
-        body.fullscreen-exit .gallery-overlay {
-            z-index: 9999;
-        }
+/* 关闭按钮 */
 
-    
-        /* 灯箱缩放状态 */
-        .lightbox-overlay.zoomed {
-            overflow: visible;
-        }
-        .lightbox-overlay img,
-        .lightbox-overlay video {
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .lightbox-overlay.zoomed img,
-        .lightbox-overlay.zoomed video {
-            transition: transform 0.3s ease !important;
-            cursor: zoom-out;
-        }
-        .lightbox-overlay img:not([style*="transform"]),
-        .lightbox-overlay video:not([style*="transform"]) {
-            cursor: zoom-in;
-        }
+
+/* ============ 灯箱 ============ */
+.lightbox-overlay {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, 0.95);
+  touch-action: none; backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  z-index: 10000; display: none; justify-content: center; align-items: center;
+  opacity: 0; transition: opacity 0.3s ease; overflow: hidden;
+}
+.lightbox-overlay.active { display: flex; opacity: 1; }
+.lightbox-overlay img, .lightbox-overlay video {
+  max-width: 90vw; max-height: 90vh; border-radius: 8px;
+  box-shadow: 0 0 40px rgba(255,255,255,0.2);
+  transform: scale(0.85);
+  transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.lightbox-overlay.active img { transform: scale(1); }
+.lightbox-overlay video {
+  max-width: 90vw; max-height: 90vh; border-radius: 8px;
+  box-shadow: 0 0 40px rgba(255,255,255,0.2);
+  transform: scale(0.85);
+  transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.lightbox-overlay.active video { transform: scale(1); }
+
+/* 星空canvas层级 */
+#starfield-layer-front { z-index: -2; }
+#starfield-layer-mid { z-index: -3; }
+#starfield-layer-back { z-index: -4; }
+#particle-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9998; pointer-events: none; }
+#shooting-stars-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; pointer-events: none; }
+
+.g-col img { transition: transform 0.1s ease-out, filter 0.3s ease, box-shadow 0.3s ease; transform-style: preserve-3d; will-change: transform; }
+.g-col.focus-mode .g-card:not(:hover) { filter: brightness(0.4) blur(3px); transform: scale(0.95); }
+.g-col .g-card { transition: filter 0.3s ease, transform 0.3s ease; }
+
+.spectrum-container { display: flex; align-items: flex-end; height: 20px; gap: 1px; margin-left: 8px; }
+.spectrum-bar { width: 2px; background: white; border-radius: 1px; transition: height 0.05s ease; min-height: 2px; }
+.magnetic-btn { transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+.typewriter-cursor { display: inline-block; width: 2px; height: 1em; background: white; margin-left: 2px; animation: blink 0.7s infinite; vertical-align: text-bottom; }
+@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+
+body.fullscreen-exit .sidebar-trigger,
+body.fullscreen-exit .content { opacity: 0; pointer-events: none; }
+body.fullscreen-exit .gallery-overlay,
+body.fullscreen-exit .video-overlay { z-index: 9999; }
+
+.lightbox-overlay.zoomed { overflow: visible; }
+.lightbox-overlay img, .lightbox-overlay video {
+  -webkit-user-select: none; -moz-user-select: none; -ms-user-select: none; user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.lightbox-overlay.zoomed img, .lightbox-overlay.zoomed video {
+  transition: transform 0.3s ease !important; cursor: zoom-out;
+}
+.lightbox-overlay img:not([style*="transform"]),
+.lightbox-overlay video:not([style*="transform"]) { cursor: zoom-in; }
+
+.lightbox-zoom-btn {
+  position: absolute;
+  top: 80px;
+  right: 20px;
+  z-index: 10001;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.3);
+  color: white;
+  font-size: 22px;
+  cursor: pointer;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s;
+}
+.lightbox-zoom-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+.lightbox-zoom-btn.visible {
+  display: flex;
+}
+
+
+/* 音乐播放器关闭按钮 */
+
+/* 音乐播放器遮罩层 */
+.music-player-backdrop {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+  z-index: 104;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+.music-player-float.active ~ .music-player-backdrop {
+  opacity: 1; pointer-events: auto;
+}
+
+@media (max-width: 400px) {
+  .music-player-float .cover-art { width: 150px; height: 150px; }
+  .music-player-float .song-title { font-size: 1.4rem; }
+}
+
+@media (max-width: 768px) {
+  .rotating-nav { top: 15px; left: 15px; width: 180px; height: 180px; }
+  .rotating-nav .center-circle { width: 40px; height: 40px; }
+  .rotating-nav .card { padding: 5px 7px; }
+  .rotating-nav .card span { font-size: 9px; }
+  .music-player-float { width: calc(100vw - 40px); height: 80vh; border-radius: 30px; }
+  .music-player-float .glass-card { border-radius: 30px; padding: 16px 14px 14px; }
+  .music-player-float .cover-art { width: 140px; height: 140px; border-radius: 24px; }
+  .music-player-float .song-title { font-size: 1.3rem; }
+  .content { width: 85%; max-width: none; margin-right: 0; padding: 110px 20px 40px; }
+  h1 { font-size: 32px !important; } p { font-size: 15px; line-height: 1.6; }
+  .sidebar-trigger { padding: 20px 12px; font-size: 15px; letter-spacing: 6px; border-radius: 16px 0 0 16px; }
+  .gallery-grid, .video-grid { gap: 8px; padding: 40px 0; display: block; columns: 3; column-gap: 8px; }
+  #splash-screen h1 { font-size: 48px; }
+  .g-col, .v-col { display: inline-block; width: 100%; break-inside: avoid; margin-top: 0 !important; }
+  .g-col img, .v-col video { break-inside: avoid; width: 100%; }
+  .g-col::-webkit-scrollbar, .v-col::-webkit-scrollbar { display: none; }
+}
 </style>
 </head>
 <body>
-    <div id="splash-screen"><h1>嗨咯</h1><div id="splash-hint">点击跳过</div></div>
 
-    <canvas id="starfield-layer-back"></canvas>
-    <canvas id="starfield-layer-mid"></canvas>
-    <canvas id="starfield-layer-front"></canvas>
-    <canvas id="particle-canvas"></canvas>
-    <canvas id="shooting-stars-canvas"></canvas>    <canvas id="spectrum-canvas" style="position:fixed;top:0;left:0;width:100%;height:100%;z-index:-5;pointer-events:none;"></canvas>
-
-    <div class="playlist-overlay" id="playlist-overlay"></div>
-
-    <div class="music-player paused" id="music-player">
-        <button class="play-btn" id="play-btn">▶</button>
-        <div class="song-info"><span class="song-title" id="song-title"></span></div>
-        <div class="spectrum-container" id="spectrum-container"></div>
+<!-- ============ Rotating Cards 左上角导航 ============ -->
+<div class="rotating-nav" id="rotating-nav">
+  <div class="void">
+    <div class="last-circle"></div>
+    <div class="second-circle"></div>
+    <div class="center-circle"></div>
+    <div class="mask-ring"></div>
+    <div class="crop">
+      <ul class="card-list">
+        <li>
+          <div class="card" data-action="gallery">
+            <img src="hh/1.gif" alt="图片">
+            <span>图片</span>
+          </div>
+        </li>
+        <li>
+          <div class="card" data-action="video">
+            <img src="hh/1.gif" alt="视频">
+            <span>视频</span>
+          </div>
+        </li>
+        <li>
+          <div class="card" data-action="test">
+            <span>测试</span>
+          </div>
+        </li>
+        <li>
+          <div class="card" data-action="design">
+            <img src="hh/1.gif" alt="设计">
+            <span>设计</span>
+          </div>
+        </li>
+        <li>
+          <div class="card" data-action="music">
+            <img src="hh/1.gif" alt="音乐">
+            <span>音乐</span>
+          </div>
+        </li>
+        <li>
+          <div class="card" data-action="code">
+            <img src="hh/1.gif" alt="代码">
+            <span>代码</span>
+          </div>
+        </li>
+      </ul>
     </div>
-    <div class="playlist" id="playlist">
-        <button class="playlist-item active" data-src="星炬不熄.mp3" data-name="星炬不熄">🎵 星炬不熄</button>
-        <button class="playlist-item" data-src="远航星的告别.mp3" data-name="远航星的告别">🎵 远航星的告别</button>
-        <button class="playlist-item" data-src="独角.mp3" data-name="独角">🎵 独角</button>
-    </div>
+  </div>
+</div>
 
-    <div class="sidebar-trigger" id="sidebar-trigger">✨</div>
-    <div class="content" id="content">
-        <h1 id="typewriter-title"></h1><span class="typewriter-cursor" id="typewriter-cursor"></span>
-        <p></p>
-    </div>
+<!-- ============ 星空主页内容 ============ -->
+<div id="splash-screen"><h1>嗨咯</h1><div id="splash-hint">点击跳过</div></div>
+<canvas id="starfield-layer-back"></canvas>
+<canvas id="starfield-layer-mid"></canvas>
+<canvas id="starfield-layer-front"></canvas>
+<canvas id="particle-canvas"></canvas>
+<canvas id="shooting-stars-canvas"></canvas>
 
-    <div class="gallery-trigger" id="gallery-trigger">✨</div>
-    <div class="gallery-overlay" id="gallery-overlay">
-        <div class="gallery-grid">
-            <div class="g-col" id="g-col-1">
-                <!-- 视频1：放在照片前面 -->
-                <div class="video-card" data-type="video" data-src="./hhh/1.mp4">
-                    <video muted loop playsinline autoplay>
-                        <source src="./hhh/1.mp4" type="video/mp4">
-                    </video>
-                    <div class="play-icon-overlay">▶</div>
-                </div>
-                <img src="./img/01.jpg" alt="Photo">
-                <img src="./img/02.jpg" alt="Photo">
-                <img src="./img0/03.jpg" alt="Photo">
-                <img src="./img0/04.jpg" alt="Photo">
-            </div>
-            <div class="g-col" id="g-col-2">
-                <!-- 视频2 -->
-                <div class="video-card" data-type="video" data-src="./hhh/2.mp4">
-                    <video muted loop playsinline autoplay>
-                        <source src="./hhh/2.mp4" type="video/mp4">
-                    </video>
-                    <div class="play-icon-overlay">▶</div>
-                </div>
-                <img src="./img0/05.jpg" alt="Photo">
-                <img src="./img2/06.jpg" alt="Photo">
-                <img src="./img2/07.jpg" alt="Photo">
-                <img src="./img5/08.jpg" alt="Photo">
-            </div>
-            <div class="g-col" id="g-col-3">
-                <!-- 视频3 -->
-                <div class="video-card" data-type="video" data-src="./hhh/3.mp4">
-                    <video muted loop playsinline autoplay>
-                        <source src="./hhh/3.mp4" type="video/mp4">
-                    </video>
-                    <div class="play-icon-overlay">▶</div>
-                </div>
-                <img src="./img5/09.jpg" alt="Photo">
-                <img src="./img6/10.jpg" alt="Photo">
-                <img src="./img3/12.jpg" alt="Photo">
-                <img src="./img3/13.jpg" alt="Photo">
-            </div>
-            <div class="g-col" id="g-col-4">
-                <!-- 视频4 -->
-                <div class="video-card" data-type="video" data-src="./hhh/4.mp4">
-                    <video muted loop playsinline autoplay>
-                        <source src="./hhh/4.mp4" type="video/mp4">
-                    </video>
-                    <div class="play-icon-overlay">▶</div>
-                </div>
-                <img src="./img3/14.jpg" alt="Photo">
-                <img src="./img3/15.jpg" alt="Photo">
-                <img src="./img4/16.jpg" alt="Photo">
-                <img src="./img4/17.jpg" alt="Photo">
-            </div>
-            <div class="g-col" id="g-col-5">
-                <!-- 视频5 -->
-                <div class="video-card" data-type="video" data-src="./hhh/5.mp4">
-                    <video muted loop playsinline autoplay>
-                        <source src="./hhh/5.mp4" type="video/mp4">
-                    </video>
-                    <div class="play-icon-overlay">▶</div>
-                </div>
-                <img src="./img3/11.jpg" alt="Photo">
-                <img src="./img7/18.jpg" alt="Photo">
-                <img src="./img7/19.jpg" alt="Photo">
-                <img src="./img7/20.jpg" alt="Photo">
-            </div>
+<!-- 侧边栏 -->
+<div class="sidebar-trigger" id="sidebar-trigger">✨</div>
+<div class="content" id="content">
+  <h1 id="typewriter-title"></h1><span class="typewriter-cursor" id="typewriter-cursor"></span>
+  <p></p>
+</div>
+
+<!-- ============ 照片栏（已删除5个视频，只保留图片） ============ -->
+<div class="gallery-overlay" id="gallery-overlay">
+  <div class="gallery-grid">
+    <div class="g-col" id="g-col-1">
+      <img src="./img/01.jpg" alt="Photo">
+      <img src="./img/02.jpg" alt="Photo">
+      <img src="./img0/03.jpg" alt="Photo">
+      <img src="./img0/04.jpg" alt="Photo">
+    </div>
+    <div class="g-col" id="g-col-2">
+      <img src="./img0/05.jpg" alt="Photo">
+      <img src="./img2/06.jpg" alt="Photo">
+      <img src="./img2/07.jpg" alt="Photo">
+      <img src="./img5/08.jpg" alt="Photo">
+    </div>
+    <div class="g-col" id="g-col-3">
+      <img src="./img5/09.jpg" alt="Photo">
+      <img src="./img6/10.jpg" alt="Photo">
+      <img src="./img3/12.jpg" alt="Photo">
+      <img src="./img3/13.jpg" alt="Photo">
+    </div>
+    <div class="g-col" id="g-col-4">
+      <img src="./img3/14.jpg" alt="Photo">
+      <img src="./img3/15.jpg" alt="Photo">
+      <img src="./img4/16.jpg" alt="Photo">
+      <img src="./img4/17.jpg" alt="Photo">
+    </div>
+    <div class="g-col" id="g-col-5">
+      <img src="./img3/11.jpg" alt="Photo">
+      <img src="./img7/18.jpg" alt="Photo">
+      <img src="./img7/19.jpg" alt="Photo">
+      <img src="./img7/20.jpg" alt="Photo">
+    </div>
+  </div>
+</div>
+
+<!-- ============ 视频栏 ============ -->
+<div class="video-overlay" id="video-overlay">
+  <div class="video-grid">
+    <div class="v-col" id="v-col-1">
+      <video muted loop playsinline autoplay src="./hhh/1.mp4"></video>
+      <video muted loop playsinline autoplay src="./hhh/2.mp4"></video>
+      <video muted loop playsinline autoplay src="./hhh/3.mp4"></video>
+    </div>
+    <div class="v-col" id="v-col-2">
+      <video muted loop playsinline autoplay src="./hhh/4.mp4"></video>
+      <video muted loop playsinline autoplay src="./hhh/5.mp4"></video>
+      <video muted loop playsinline autoplay src="./hhh/1.mp4"></video>
+    </div>
+    <div class="v-col" id="v-col-3">
+      <video muted loop playsinline autoplay src="./hhh/2.mp4"></video>
+      <video muted loop playsinline autoplay src="./hhh/3.mp4"></video>
+      <video muted loop playsinline autoplay src="./hhh/4.mp4"></video>
+    </div>
+    <div class="v-col" id="v-col-4">
+      <video muted loop playsinline autoplay src="./hhh/5.mp4"></video>
+      <video muted loop playsinline autoplay src="./hhh/1.mp4"></video>
+      <video muted loop playsinline autoplay src="./hhh/2.mp4"></video>
+    </div>
+    <div class="v-col" id="v-col-5">
+      <video muted loop playsinline autoplay src="./hhh/3.mp4"></video>
+      <video muted loop playsinline autoplay src="./hhh/4.mp4"></video>
+      <video muted loop playsinline autoplay src="./hhh/5.mp4"></video>
+    </div>
+  </div>
+</div>
+
+<!-- ============ 音乐播放器浮层 ============ -->
+<div class="music-player-float" id="music-player-float">
+  <div class="player-wrapper">
+    <img id="bgImage" class="background-image" src="https://picsum.photos/id/1043/600/1000" alt="背景" crossorigin="anonymous">
+    <div class="glass-card">
+      <div class="time-display">
+        <span class="current-time" id="liveTime">--:--</span>
+        <span class="date-badge" id="liveDate">----.--.--</span>
+      </div>
+      <div class="cover-section">
+        <img id="coverImage" class="cover-art" src="https://picsum.photos/id/237/300/300" alt="封面" crossorigin="anonymous">
+      </div>
+      <div class="song-info">
+        <div class="song-title" id="songTitle">加载中</div>
+        <div class="artist" id="artistName">未知</div>
+      </div>
+      <div class="lyrics-container">
+        <div class="lyrics-text" id="lyricsDisplay">🎵 点击播放</div>
+      </div>
+      <div class="progress-area">
+        <span class="time-elapsed" id="currentTimeDisplay">0:00</span>
+        <div class="progress-bar" id="progressBarContainer">
+          <div class="progress-fill" id="progressFill" style="width:0%"></div>
         </div>
+        <span class="time-total" id="durationDisplay">0:00</span>
+      </div>
+      <div class="controls">
+        <button class="ctrl-btn small-btn" id="prevBtn" aria-label="上一曲">⏮️</button>
+        <button class="ctrl-btn play-btn" id="playPauseBtn" aria-label="播放暂停">▶️</button>
+        <button class="ctrl-btn small-btn" id="nextBtn" aria-label="下一曲">⏭️</button>
+      </div>
+      <div class="playlist-toggle">
+        <button class="list-btn" id="togglePlaylistBtn"><span></span> 歌单</button>
+      </div>
     </div>
-
-    <div class="lightbox-overlay" id="lightbox-overlay">
-        <img id="lightbox-img" src="" alt="放大图片" style="display:none;" >
-        <video id="lightbox-video" controls style="display:none;" ></video>
+    <div class="playlist-panel" id="playlistPanel">
+      <div class="playlist-header">
+        <span>🎶 播放列表 (10首)</span>
+        <button class="close-list" id="closePlaylistBtn">✕</button>
+      </div>
+      <div id="songListContainer"></div>
     </div>
+  </div>
+</div>
 
-    <audio id="bg-music" src="星炬不熄.mp3" preload="auto"></audio>
+<!-- 音乐播放器遮罩层 - 点击空白区域关闭 -->
+<div class="music-player-backdrop" id="music-player-backdrop"></div>
 
-    <script>
-        window.addEventListener('load', function() {
-            var audio = document.getElementById("bg-music"),
-                player = document.getElementById("music-player"),
-                playBtn = document.getElementById("play-btn"),
-                songTitle = document.getElementById("song-title"),
-                playlist = document.getElementById("playlist"),
-                overlay = document.getElementById("playlist-overlay"),
-                playlistItems = document.querySelectorAll(".playlist-item"),
-                sidebarTrigger = document.getElementById("sidebar-trigger"),
-                content = document.getElementById("content"),
-                splash = document.getElementById("splash-screen"),
-                lightboxOverlay = document.getElementById("lightbox-overlay"),
-                lightboxImg = document.getElementById("lightbox-img"),
-                lightboxVideo = document.getElementById("lightbox-video");
+<!-- 关闭按钮 -->
 
-            function playMusic() {
-                audio.play().then(function() {
-                    playBtn.innerHTML = "⏸";
-                    player.classList.remove("paused");
-                }).catch(function(e) { console.log("播放失败:", e); });
-            }
-            function pauseMusic() {
-                audio.pause();
-                playBtn.innerHTML = "▶";
-                player.classList.add("paused");
-            }
 
-            playBtn.addEventListener("click", function(e) {
-                e.stopPropagation();
-                if (audio.paused) playMusic();
-                else pauseMusic();
-            });
-            
-            function togglePlaylist() {
-                playlist.classList.toggle("active");
-                overlay.classList.toggle("active");
-            }
-            player.addEventListener("click", function(e) {
-                if (e.target === playBtn || playBtn.contains(e.target)) return;
-                togglePlaylist();
-            });
+<!-- 灯箱 -->
+<div class="lightbox-overlay" id="lightbox-overlay">
+  <img id="lightbox-img" src="" alt="放大图片" style="display:none;" draggable="false">
+  <video id="lightbox-video" controls style="display:none;" draggable="false"></video>
+  <button class="lightbox-zoom-btn" id="lightbox-zoom-btn" title="放大/缩小">🔍</button>
+</div>
 
-            playlistItems.forEach(function(item) {
-                item.addEventListener("click", function() {
-                    playlistItems.forEach(function(i) { i.classList.remove("active"); });
-                    this.classList.add("active");
-                    audio.src = this.getAttribute("data-src");
-                    songTitle.innerText = this.getAttribute("data-name");
-                    playMusic();
-                });
-            });
-            audio.addEventListener('ended', function() {
-                var currentIndex = -1;
-                playlistItems.forEach(function(item, index) {
-                    if (item.classList.contains('active')) currentIndex = index;
-                });
-                var nextIndex = (currentIndex + 1) % playlistItems.length;
-                audio.currentTime = 0;
-                playlistItems[nextIndex].click();
-            });
+<!-- 视频音频（用于暂停/播放控制） -->
+<audio id="video-audio-bg" preload="auto"></audio>
 
-            overlay.addEventListener("click", function() {
-                playlist.classList.remove("active");
-                content.classList.remove("active");
-                overlay.classList.remove("active");
-            });
-            sidebarTrigger.addEventListener("click", function(e) {
-                e.stopPropagation();
-                content.classList.toggle("active");
-                if (content.classList.contains("active")) {
-                    playlist.classList.remove("active");
-                    overlay.classList.remove("active");
-                }
-            });
+<script>
+// ============ 全局状态 ============
+var isVideoPlaying = false;
+var musicPlayerFloat = document.getElementById('music-player-float');
+var galleryOverlay = document.getElementById('gallery-overlay');
+var videoOverlay = document.getElementById('video-overlay');
+var rotatingNav = document.getElementById('rotating-nav');
 
-            document.addEventListener("click", function(e) {
-                if (!content.contains(e.target) && !sidebarTrigger.contains(e.target)) {
-                    content.classList.remove("active");
-                }
-            });
+// ============ Rotating Cards 点击事件 ============
+(function() {
+  function hideRotatingNav() {
+    rotatingNav.style.opacity = '0';
+    rotatingNav.style.pointerEvents = 'none';
+  }
+  function showRotatingNav() {
+    var anyOpen = galleryOverlay.classList.contains('active')
+               || videoOverlay.classList.contains('active')
+               || musicPlayerFloat.classList.contains('active');
+    if (!anyOpen) {
+      rotatingNav.style.opacity = '1';
+      rotatingNav.style.pointerEvents = 'auto';
+    }
+  }
 
-            // --- 灯箱逻辑 ---
-                function openLightboxMedia(src, type, idx) {
-                lightboxImg.style.display = 'none';
-                lightboxVideo.style.display = 'none';
-                lightboxVideo.pause();
-                lightboxVideo.src = '';
+  document.querySelectorAll('.rotating-nav .card').forEach(function(card) {
+    card.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var action = this.getAttribute('data-action');
+      // 先关闭所有 overlay
+      galleryOverlay.classList.remove('active');
+      videoOverlay.classList.remove('active');
+      musicPlayerFloat.classList.remove('active');
 
-                if (typeof idx === 'number') {
-                    currentMediaIndex = idx;
-                }
-
-                if (type === 'video') {
-                    lightboxVideo.src = src;
-                    lightboxVideo.style.display = 'block';
-                    lightboxVideo.play();
-                } else {
-                    lightboxImg.src = src;
-                    lightboxImg.style.display = 'block';
-                }
-                lightboxOverlay.classList.add('active');
-            }
-
-            
-
-            
-
-            function closeLightbox() {
-                lightboxOverlay.classList.remove('active');
-                lightboxVideo.pause();
-                lightboxVideo.src = '';
-                setTimeout(function() { lightboxImg.src = ''; }, 300);
-            }
-
-            // === 构建媒体元素数组（按DOM顺序：每列从上到下） ===
-var mediaElements = [];
-document.querySelectorAll('.g-col').forEach(function(col) {
-    col.querySelectorAll('img, .video-card').forEach(function(el) {
-        mediaElements.push(el);
+      switch(action) {
+        case 'gallery':
+          galleryOverlay.classList.add('active');
+          hideRotatingNav();
+          break;
+        case 'video':
+          videoOverlay.classList.add('active');
+          hideRotatingNav();
+          // 视频打开时暂停音乐
+          pauseMusicForVideo();
+          break;
+        case 'music':
+          musicPlayerFloat.classList.add('active');
+          hideRotatingNav();
+          // 打开音乐播放器时如果视频没在播放则恢复音乐
+          resumeMusicIfNeeded();
+          break;
+        case 'test':
+          window.location.href = 'test.html';
+          break;
+        case 'design':
+          window.location.href = 'design.html';
+          break;
+        case 'code':
+          window.location.href = 'code.html';
+          break;
+      }
     });
-});
-var currentMediaIndex = 0;
+  });
 
-// 给所有画廊图片绑定点击事件
-            document.querySelectorAll('.g-col img').forEach(function(img) {
-                img.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    var idx = mediaElements.indexOf(this);
-                    openLightboxMedia(this.src, 'image', idx);
-                });
-            });
+  // 关闭按钮已删除，使用点击背景关闭
 
-            // 视频卡片自动播放控制
-            document.querySelectorAll('.video-card video').forEach(function(vid) {
-                vid.addEventListener('play', function() {
-                    this.parentElement.querySelector('.play-icon-overlay').style.display = 'none';
-                });
-                vid.addEventListener('pause', function() {
-                    this.parentElement.querySelector('.play-icon-overlay').style.display = 'block';
-                });
-                vid.addEventListener('ended', function() {
-                    this.parentElement.querySelector('.play-icon-overlay').style.display = 'block';
-                });
-            });
-
-            // 视频卡片点击放大
-            document.querySelectorAll('.video-card').forEach(function(card) {
-                card.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    var idx = mediaElements.indexOf(this);
-                    var videoSrc = this.getAttribute('data-src');
-                    openLightboxMedia(videoSrc, 'video', idx);
-                });
-            });
-
-            lightboxOverlay.addEventListener('click', function(e) {
-                if (e.target === lightboxOverlay && !justSwiped) {
-                    closeLightbox();
-                }
-            });
-
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape' && lightboxOverlay.classList.contains('active')) {
-                    closeLightbox();
-                }
-            });
-
-            // 开屏动画 - 点击跳过 + 自动消失
-            var splashRemoved = false;
-            function removeSplash() {
-                if (splashRemoved) return;
-                splashRemoved = true;
-                if (splash) {
-                    splash.style.opacity = '0';
-                    setTimeout(function() {
-                        splash.remove();
-                    }, 800);
-                }
-            }
-            // 点击开屏可跳过
-            splash.addEventListener('click', function() {
-                removeSplash();
-                playMusic();
-            });
-            // 自动消失
-            setTimeout(function() { 
-                removeSplash();
-                playMusic();
-            }, 2500);
-        
-        // ============================================================
-        // 灯箱滑动换图 + 双击缩放（完全重写版 - 解决所有问题）
-        // ============================================================
-
-        // 为灯箱图片添加 draggable="false" 禁止浏览器默认拖拽
-        lightboxImg.setAttribute('draggable', 'false');
-        lightboxVideo.setAttribute('draggable', 'false');
-
-        // 阻止图片默认拖拽行为
-        lightboxImg.addEventListener('dragstart', function(e) { e.preventDefault(); });
-        lightboxVideo.addEventListener('dragstart', function(e) { e.preventDefault(); });
-
-        // 灯箱内容区域禁止文本选中
-        lightboxOverlay.style.webkitUserSelect = 'none';
-        lightboxOverlay.style.userSelect = 'none';
-
-        // === 灯箱交互：双击放大 + 滑动换图（最终修复版） ===
-
-// 获取当前显示的媒体元素（img 或 video）
-function getCurrentMediaElement() {
-    if (lightboxImg.style.display === 'block' && lightboxImg.src) {
-        return lightboxImg;
+  // 点击背景关闭
+  galleryOverlay.addEventListener('click', function(e) {
+    if (e.target === galleryOverlay) {
+      galleryOverlay.classList.remove('active');
+      showRotatingNav();
     }
-    if (lightboxVideo.style.display === 'block' && lightboxVideo.src) {
-        return lightboxVideo;
+  });
+  videoOverlay.addEventListener('click', function(e) {
+    if (e.target === videoOverlay) {
+      videoOverlay.classList.remove('active');
+      showRotatingNav();
     }
+  });
+
+  // 音乐播放器点击空白处收起（但音乐不停）
+  var playerWrapper = document.querySelector('.music-player-float .player-wrapper');
+  musicPlayerFloat.addEventListener('click', function(e) {
+    if (e.target === musicPlayerFloat) {
+      musicPlayerFloat.classList.remove('active');
+      showRotatingNav();
+      // 音乐不停，继续播放
+    }
+  });
+
+  // 点击遮罩层关闭音乐播放器
+  var musicBackdrop = document.getElementById('music-player-backdrop');
+  if (musicBackdrop) {
+    musicBackdrop.addEventListener('click', function(e) {
+      musicPlayerFloat.classList.remove('active');
+      showRotatingNav();
+      // 音乐不停，继续播放
+    });
+  }
+})();
+
+// ============ 音乐播放器逻辑（来自 yy2.html） ============
+(function() {
+  const playlist = [
+    { title: "晨曦微光", artist: "玻璃城市", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", cover: "https://picsum.photos/id/1015/300/300", lyrics: "清晨第一缕阳光 · 透过玻璃窗 · 温暖洒在脸上" },
+    { title: "午后咖啡", artist: "LoFi Dream", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", cover: "https://picsum.photos/id/106/300/300", lyrics: "一杯咖啡的时光 · 慵懒的午后 · 思绪飘向远方" },
+    { title: "星河漫步", artist: "Cosmic Drift", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", cover: "https://picsum.photos/id/1025/300/300", lyrics: "漫步在星河之间 · 微光闪烁的夜晚 · 你的眼眸像星辰" },
+    { title: "雨后森林", artist: "Nature Beats", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", cover: "https://picsum.photos/id/1043/300/300", lyrics: "雨滴落在树叶上 · 空气里弥漫清香 · 脚步轻轻走过" },
+    { title: "城市霓虹", artist: "Neon Lights", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", cover: "https://picsum.photos/id/1047/300/300", lyrics: "霓虹灯闪烁的街 · 夜色温柔如水 · 人群川流不息" },
+    { title: "海浪之声", artist: "Ocean Wave", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3", cover: "https://picsum.photos/id/1049/300/300", lyrics: "海浪拍打岸边 · 海风轻拂脸庞 · 忘掉所有烦恼" },
+    { title: "秋日私语", artist: "Autumn Leaf", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3", cover: "https://picsum.photos/id/1051/300/300", lyrics: "落叶铺满小径 · 秋天悄悄来临 · 思念随风飘散" },
+    { title: "冬日暖阳", artist: "Winter Sun", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3", cover: "https://picsum.photos/id/1055/300/300", lyrics: "冬日的阳光 · 温暖而珍贵 · 像你的拥抱" },
+    { title: "樱花雨", artist: "Sakura", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3", cover: "https://picsum.photos/id/1059/300/300", lyrics: "樱花飘落的速度 · 是每秒五厘米 · 美好稍纵即逝" },
+    { title: "月光曲", artist: "Moonlight", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3", cover: "https://picsum.photos/id/1067/300/300", lyrics: "月光洒满大地 · 宁静而安详 · 晚安我的世界" }
+  ];
+
+  let currentIndex = 0;
+  const audio = new Audio();
+  let isPlaying = false;
+
+  const bgImage = document.getElementById('bgImage');
+  const coverImage = document.getElementById('coverImage');
+  const songTitle = document.getElementById('songTitle');
+  const artistName = document.getElementById('artistName');
+  const lyricsDisplay = document.getElementById('lyricsDisplay');
+  const currentTimeDisplay = document.getElementById('currentTimeDisplay');
+  const durationDisplay = document.getElementById('durationDisplay');
+  const progressFill = document.getElementById('progressFill');
+  const progressBar = document.getElementById('progressBarContainer');
+  const playPauseBtn = document.getElementById('playPauseBtn');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const liveTime = document.getElementById('liveTime');
+  const liveDate = document.getElementById('liveDate');
+  const togglePlaylistBtn = document.getElementById('togglePlaylistBtn');
+  const playlistPanel = document.getElementById('playlistPanel');
+  const closePlaylistBtn = document.getElementById('closePlaylistBtn');
+  const songListContainer = document.getElementById('songListContainer');
+
+  window.musicAudio = audio; // 暴露给外部控制
+  window.isMusicPlaying = function() { return isPlaying; };
+
+  function formatTime(sec) {
+    if (isNaN(sec) || sec < 0) return "0:00";
+    const m = Math.floor(sec / 60);
+    const s = Math.floor(sec % 60);
+    return m + ':' + s.toString().padStart(2, '0');
+  }
+
+  function updateClock() {
+    const now = new Date();
+    liveTime.textContent = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+    const days = ['周日','周一','周二','周三','周四','周五','周六'];
+    liveDate.textContent = now.getFullYear() + '.' + (now.getMonth()+1).toString().padStart(2, '0') + '.' + now.getDate().toString().padStart(2, '0') + ' ' + days[now.getDay()];
+  }
+
+  function renderPlaylist() {
+    songListContainer.innerHTML = playlist.map(function(song, idx) {
+      const activeClass = idx === currentIndex ? 'active' : '';
+      return '<div class="song-item ' + activeClass + '" data-index="' + idx + '">' +
+        '<div><div class="song-item-title">' + song.title + '</div>' +
+        '<div class="song-item-artist">' + song.artist + '</div></div>' +
+        '<span>' + (idx === currentIndex ? '🎵' : '') + '</span></div>';
+    }).join('');
+    document.querySelectorAll('.song-item').forEach(function(item) {
+      item.addEventListener('click', function() {
+        const index = parseInt(item.dataset.index, 10);
+        if (!isNaN(index) && index !== currentIndex) {
+          loadTrack(index);
+        }
+        closePlaylist();
+      });
+    });
+  }
+
+  function loadTrack(index) {
+    if (index < 0) index = playlist.length - 1;
+    if (index >= playlist.length) index = 0;
+    currentIndex = index;
+    const track = playlist[currentIndex];
+    songTitle.textContent = track.title;
+    artistName.textContent = track.artist;
+    coverImage.src = track.cover;
+    lyricsDisplay.textContent = track.lyrics || "🎶";
+    audio.src = track.src;
+    audio.load();
+    progressFill.style.width = '0%';
+    currentTimeDisplay.textContent = '0:00';
+    durationDisplay.textContent = '0:00';
+    renderPlaylist();
+    if (isPlaying) {
+      audio.play().catch(function() { isPlaying = false; updatePlayIcon(); });
+    }
+  }
+
+  function updatePlayIcon() {
+    playPauseBtn.textContent = isPlaying ? '⏸️' : '▶️';
+  }
+
+  function togglePlay() {
+    if (!audio.src || audio.src === window.location.href) loadTrack(currentIndex);
+    if (isPlaying) {
+      audio.pause();
+      isPlaying = false;
+    } else {
+      audio.play().then(function() { isPlaying = true; }).catch(function() { isPlaying = false; });
+    }
+    updatePlayIcon();
+  }
+
+  function pauseMusicForVideo() {
+    if (isPlaying) {
+      audio.pause();
+      isPlaying = false;
+      updatePlayIcon();
+    }
+  }
+
+  function resumeMusicIfNeeded() {
+    // 如果视频栏已关闭且音乐播放器也关闭了，且音乐没有在被观看视频时暂停
+    // 这里不做自动恢复，让用户自己点播放
+    // 但如果只是打开了音乐播放器，且之前没有在看视频，则恢复
+  }
+
+  function nextTrack() { loadTrack(currentIndex + 1); }
+  function prevTrack() { loadTrack(currentIndex - 1); }
+
+  function updateProgress() {
+    if (audio.duration && !isNaN(audio.duration)) {
+      progressFill.style.width = (audio.currentTime / audio.duration) * 100 + '%';
+      currentTimeDisplay.textContent = formatTime(audio.currentTime);
+      durationDisplay.textContent = formatTime(audio.duration);
+    }
+  }
+
+  function setProgress(e) {
+    if (!audio.duration) return;
+    const rect = progressBar.getBoundingClientRect();
+    const ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
+    audio.currentTime = ratio * audio.duration;
+  }
+
+  function openPlaylist() { playlistPanel.classList.add('open'); }
+  function closePlaylist() { playlistPanel.classList.remove('open'); }
+
+  audio.addEventListener('timeupdate', updateProgress);
+  audio.addEventListener('loadedmetadata', function() {
+    durationDisplay.textContent = formatTime(audio.duration);
+    updateProgress();
+  });
+  audio.addEventListener('ended', nextTrack);
+  audio.addEventListener('play', function() { isPlaying = true; updatePlayIcon(); });
+  audio.addEventListener('pause', function() { isPlaying = false; updatePlayIcon(); });
+  audio.addEventListener('error', function() {
+    lyricsDisplay.textContent = "⚠️ 音频加载失败";
+    isPlaying = false;
+    updatePlayIcon();
+  });
+
+  playPauseBtn.addEventListener('click', togglePlay);
+  prevBtn.addEventListener('click', prevTrack);
+  nextBtn.addEventListener('click', nextTrack);
+  progressBar.addEventListener('click', setProgress);
+  coverImage.addEventListener('click', togglePlay);
+  togglePlaylistBtn.addEventListener('click', openPlaylist);
+  closePlaylistBtn.addEventListener('click', closePlaylist);
+  playlistPanel.addEventListener('click', function(e) {
+    if (e.target === playlistPanel) closePlaylist();
+  });
+
+  updateClock();
+  setInterval(updateClock, 1000);
+  loadTrack(0);
+  audio.pause();
+  isPlaying = false;
+  updatePlayIcon();
+  renderPlaylist();
+})();
+
+// ============ 视频暂停音乐 / 停止恢复音乐 ============
+(function() {
+  var videos = document.querySelectorAll('.video-overlay video');
+  videos.forEach(function(vid) {
+    vid.addEventListener('play', function() {
+      // 视频播放时暂停音乐
+      if (window.musicAudio) {
+        window.musicAudio.pause();
+      }
+    });
+    vid.addEventListener('pause', function() {
+      // 视频暂停时，如果音乐播放器是打开状态则恢复音乐
+      if (window.musicAudio && document.getElementById('music-player-float').classList.contains('active')) {
+        window.musicAudio.play().catch(function(){});
+      }
+    });
+    vid.addEventListener('ended', function() {
+      // 视频结束也恢复音乐
+      if (window.musicAudio && document.getElementById('music-player-float').classList.contains('active')) {
+        window.musicAudio.play().catch(function(){});
+      }
+    });
+  });
+})();
+
+// ============ 灯箱逻辑 ============
+(function() {
+  var lightboxOverlay = document.getElementById('lightbox-overlay');
+  var lightboxImg = document.getElementById('lightbox-img');
+  var lightboxVideo = document.getElementById('lightbox-video');
+  var mediaElements = [];
+
+  function collectMedia() {
+    mediaElements = [];
+    document.querySelectorAll('.g-col img').forEach(function(el) { mediaElements.push(el); });
+  }
+  collectMedia();
+
+  var musicWasPlaying = false;
+  function openLightboxMedia(src, type, idx) {
+    // 如果是视频，暂停音乐并记住状态
+    if (type === 'video' && window.musicAudio) {
+      musicWasPlaying = window.isMusicPlaying();
+      if (musicWasPlaying) {
+        window.musicAudio.pause();
+      }
+    }
+    // 暂停所有内联视频
+    if (type === 'video') {
+      document.querySelectorAll('.video-overlay video').forEach(function(v) {
+        v.pause();
+      });
+    }
+    lightboxImg.style.display = 'none';
+    lightboxVideo.style.display = 'none';
+    lightboxVideo.pause();
+    lightboxVideo.src = '';
+    if (type === 'video') {
+      // 设置预加载并等待视频准备好后再播放
+      lightboxVideo.preload = 'auto';
+      lightboxVideo.src = src;
+      lightboxVideo.style.display = 'block';
+      
+      // 显示放大按钮
+      var zBtn = document.getElementById('lightbox-zoom-btn');
+      if (zBtn) zBtn.classList.add('visible');
+      
+      // 等待视频加载完成后再调用 play()
+      var playWhenReady = function() {
+        if (lightboxVideo.readyState >= 2) { // HAVE_CURRENT_DATA 或更多
+          lightboxVideo.play().catch(function(e) {
+            console.warn('视频播放失败:', e);
+          });
+        } else {
+          lightboxVideo.addEventListener('canplay', function onCanPlay() {
+            lightboxVideo.removeEventListener('canplay', onCanPlay);
+            lightboxVideo.play().catch(function(e) {
+              console.warn('视频播放失败:', e);
+            });
+          }, { once: true });
+        }
+      };
+      playWhenReady();
+      
+      // 超时保护：如果3秒后视频仍未准备好，也尝试播放
+      setTimeout(function() {
+        if (lightboxVideo.readyState < 2) {
+          lightboxVideo.play().catch(function(e) {
+            console.warn('视频播放超时:', e);
+          });
+        }
+      }, 3000);
+    } else {
+      lightboxImg.src = src;
+      lightboxImg.style.display = 'block';
+      // 隐藏放大按钮
+      var zBtn = document.getElementById('lightbox-zoom-btn');
+      if (zBtn) zBtn.classList.remove('visible');
+    }
+    lightboxOverlay.classList.add('active');
+  }
+  function closeLightbox() {
+    // 如果之前是视频且音乐在播放，恢复音乐
+    if (musicWasPlaying && window.musicAudio) {
+      // 延迟一点恢复音乐，确保灯箱关闭动画先执行
+      setTimeout(function() {
+        window.musicAudio.play().catch(function(){});
+      }, 100);
+    }
+    musicWasPlaying = false;
+    lightboxOverlay.classList.remove('active');
+    lightboxVideo.pause();
+    lightboxVideo.src = '';
+    // 隐藏放大按钮
+    var zBtn = document.getElementById('lightbox-zoom-btn');
+    if (zBtn) zBtn.classList.remove('visible');
+    setTimeout(function() { lightboxImg.src = ''; }, 300);
+  }
+
+  // 视频点击打开灯箱
+  document.querySelectorAll('.v-col video').forEach(function(vid) {
+    vid.addEventListener('click', function(e) {
+      e.stopPropagation();
+      // 确保视频源有效
+      if (this.src) {
+        openLightboxMedia(this.src, 'video', 0);
+      } else {
+        console.warn('视频源无效，无法打开灯箱');
+      }
+    });
+  });
+
+  document.querySelectorAll('.g-col img').forEach(function(img) {
+    img.addEventListener('click', function(e) {
+      e.stopPropagation();
+      collectMedia();
+      var idx = mediaElements.indexOf(this);
+      openLightboxMedia(this.src, 'image', idx);
+    });
+  });
+
+  lightboxOverlay.addEventListener('click', function(e) {
+    if (e.target === lightboxOverlay) closeLightbox();
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && lightboxOverlay.classList.contains('active')) closeLightbox();
+  });
+
+  // 灯箱滑动 + 双击缩放
+  lightboxImg.setAttribute('draggable', 'false');
+  lightboxVideo.setAttribute('draggable', 'false');
+  lightboxImg.addEventListener('dragstart', function(e) { e.preventDefault(); });
+  lightboxVideo.addEventListener('dragstart', function(e) { e.preventDefault(); });
+  lightboxOverlay.style.webkitUserSelect = 'none';
+  lightboxOverlay.style.userSelect = 'none';
+
+  function getCurrentMediaElement() {
+    if (lightboxImg.style.display === 'block' && lightboxImg.src) return lightboxImg;
+    if (lightboxVideo.style.display === 'block' && lightboxVideo.src) return lightboxVideo;
     return null;
-}
+  }
+  var isZoomed = false, justSwiped = false, lastTapTime = 0, currentMediaIndex = 0;
 
-// 禁止浏览器默认拖拽和文本选中
-lightboxImg.setAttribute('draggable', 'false');
-lightboxVideo.setAttribute('draggable', 'false');
-lightboxOverlay.style.webkitUserSelect = 'none';
-lightboxOverlay.style.userSelect = 'none';
+  function resetZoom() {
+    lightboxImg.style.transform = ''; lightboxImg.style.transformOrigin = '';
+    lightboxVideo.style.transform = ''; lightboxVideo.style.transformOrigin = '';
+    lightboxOverlay.classList.remove('zoomed'); isZoomed = false;
+    var zBtn = document.getElementById('lightbox-zoom-btn');
+    if (zBtn) {
+      zBtn.classList.remove('visible');
+      zBtn.textContent = '🔍';
+    }
+  }
 
-// === 状态管理 ===
-var isZoomed = false;
-var justSwiped = false;
-
-// === 放大（以点击位置为中心） ===
-function zoomIn(clickX, clickY) {
-    var currentEl = getCurrentMediaElement();
-    if (!currentEl) return;
-    var rect = currentEl.getBoundingClientRect();
-    var xPercent = ((clickX - rect.left) / rect.width) * 100;
-    var yPercent = ((clickY - rect.top) / rect.height) * 100;
-    currentEl.style.transformOrigin = xPercent + '% ' + yPercent + '%';
-    currentEl.style.transform = 'scale(1.8)';
-    currentEl.style.transition = 'transform 0.3s ease';
-    lightboxOverlay.classList.add('zoomed');
-    isZoomed = true;
-}
-
-// === 还原（回到原始大小） ===
-function zoomOut() {
-    var currentEl = getCurrentMediaElement();
-    if (!currentEl) return;
-    currentEl.style.transform = 'scale(1)';
-    currentEl.style.transformOrigin = 'center center';
-    lightboxOverlay.classList.remove('zoomed');
-    isZoomed = false;
-}
-
-// === 重置缩放（切换图片/关闭灯箱时调用） ===
-function resetZoom() {
-    lightboxImg.style.transform = '';
-    lightboxImg.style.transformOrigin = '';
-    lightboxVideo.style.transform = '';
-    lightboxVideo.style.transformOrigin = '';
-    lightboxOverlay.classList.remove('zoomed');
-    isZoomed = false;
-}
-
-// === 统一的鼠标/触摸事件处理 ===
-var lastTapTime = 0;
-
-function onPointerDown(e) {
-    // 只处理主按钮（左键）
+  function onPointerDown(e) {
     if (e.type === 'mousedown' && e.button !== 0) return;
-    
     var target = e.target;
     if (target !== lightboxImg && target !== lightboxVideo) return;
-    
-    // 仅在鼠标事件中阻止默认行为（防止文本选中/图片拖拽），touch事件在onMove中处理
-    if (e.type === 'mousedown') {
-        e.preventDefault();
-    }
+    if (e.type === 'mousedown') e.preventDefault();
     e.stopPropagation();
-    
     var clientX, clientY;
-    if (e.type === 'touchstart') {
-        clientX = e.touches[0].clientX;
-        clientY = e.touches[0].clientY;
-    } else {
-        clientX = e.clientX;
-        clientY = e.clientY;
-    }
-    
-    var startX = clientX;
-    var startY = clientY;
-    var isDragging = true;
-    var hasSwiped = false;
-    var swipeDist = 0;
-    
-    // 绑定全局移动/释放事件
+    if (e.type === 'touchstart') { clientX = e.touches[0].clientX; clientY = e.touches[0].clientY; }
+    else { clientX = e.clientX; clientY = e.clientY; }
+    var startX = clientX, startY = clientY;
+    var isDragging = true, hasSwiped = false, swipeDist = 0;
     var onMove = function(ev) {
-        if (!isDragging) return;
-        ev.preventDefault();
-        
-        var mx, my;
-        if (ev.type === 'touchmove') {
-            mx = ev.touches[0].clientX;
-            my = ev.touches[0].clientY;
-        } else {
-            mx = ev.clientX;
-            my = ev.clientY;
-        }
-        
-        var dx = mx - startX;
-        var dy = my - startY;
-        
-        // 水平移动明显大于垂直移动，且超过10px -> 判定为滑动
-        if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
-            hasSwiped = true;
-            swipeDist = dx;
-            var currentEl = getCurrentMediaElement();
-            if (currentEl) {
-                currentEl.style.transition = 'none';
-                currentEl.style.transform = 'translateX(' + dx + 'px) scale(1)';
-            }
-        }
+      if (!isDragging) return;
+      ev.preventDefault();
+      var mx, my;
+      if (ev.type === 'touchmove') { mx = ev.touches[0].clientX; my = ev.touches[0].clientY; }
+      else { mx = ev.clientX; my = ev.clientY; }
+      var dx = mx - startX, dy = my - startY;
+      if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
+        hasSwiped = true; swipeDist = dx;
+        var currentEl = getCurrentMediaElement();
+        if (currentEl) { currentEl.style.transition = 'none'; currentEl.style.transform = 'translateX(' + dx + 'px) scale(1)'; }
+      }
     };
-    
     var onUp = function(ev) {
-        // 确保标记为未拖拽状态
-        isDragging = false;
-        
-        // 移除全局监听
-        document.removeEventListener('mousemove', onMove);
-        document.removeEventListener('mouseup', onUp);
-        document.removeEventListener('touchmove', onMove);
-        document.removeEventListener('touchend', onUp);
-        document.removeEventListener('touchcancel', onUp);
-        
-        if (hasSwiped) {
-            // === 滑动切换 ===
-            if (swipeDist > 30) {
-                justSwiped = true;
-                setTimeout(function(){ justSwiped = false; }, 150);
-                prevMedia();
-            } else if (swipeDist < -30) {
-                justSwiped = true;
-                setTimeout(function(){ justSwiped = false; }, 150);
-                nextMedia();
+      isDragging = false;
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onUp);
+      document.removeEventListener('touchcancel', onUp);
+      if (hasSwiped) {
+        if (swipeDist > 30) { justSwiped = true; setTimeout(function(){ justSwiped = false; }, 150); prevMedia(); }
+        else if (swipeDist < -30) { justSwiped = true; setTimeout(function(){ justSwiped = false; }, 150); nextMedia(); }
+        else { var currentEl = getCurrentMediaElement(); if (currentEl) { currentEl.style.transition = 'transform 0.3s ease'; currentEl.style.transform = 'translateX(0) scale(1)'; } }
+      } else {
+        var now = Date.now(); var timeDiff = now - lastTapTime;
+        if (timeDiff < 300) {
+          var currentEl = getCurrentMediaElement();
+          if (currentEl) {
+            var rect = currentEl.getBoundingClientRect();
+            var clickX, clickY;
+            if (ev.type === 'touchend') { clickX = startX; clickY = startY; }
+            else { clickX = ev.clientX; clickY = ev.clientY; }
+            var xPercent = ((clickX - rect.left) / rect.width) * 100;
+            var yPercent = ((clickY - rect.top) / rect.height) * 100;
+            if (isZoomed) {
+              currentEl.style.transform = 'scale(1)'; currentEl.style.transformOrigin = 'center center';
+              lightboxOverlay.classList.remove('zoomed'); isZoomed = false;
             } else {
-                // 回弹
-                var currentEl = getCurrentMediaElement();
-                if (currentEl) {
-                    currentEl.style.transition = 'transform 0.3s ease';
-                    currentEl.style.transform = 'translateX(0) scale(1)';
-                }
+              currentEl.style.transformOrigin = xPercent + '% ' + yPercent + '%';
+              currentEl.style.transform = 'scale(1.8)'; currentEl.style.transition = 'transform 0.3s ease';
+              lightboxOverlay.classList.add('zoomed'); isZoomed = true;
             }
-        } else {
-            // === 点击或双击 ===
-            var now = Date.now();
-            var timeDiff = now - lastTapTime;
-            
-            if (timeDiff < 300) {
-                // 双击 -> 放大/还原
-                var currentEl = getCurrentMediaElement();
-                if (currentEl) {
-                    var rect = currentEl.getBoundingClientRect();
-                    var clickX, clickY;
-                    if (ev.type === 'touchend') {
-                        clickX = startX;
-                        clickY = startY;
-                    } else {
-                        clickX = ev.clientX;
-                        clickY = ev.clientY;
-                    }
-                    var xPercent = ((clickX - rect.left) / rect.width) * 100;
-                    var yPercent = ((clickY - rect.top) / rect.height) * 100;
-                    
-                    if (isZoomed) {
-                        // 已放大 -> 还原
-                        currentEl.style.transform = 'scale(1)';
-                        currentEl.style.transformOrigin = 'center center';
-                        lightboxOverlay.classList.remove('zoomed');
-                        isZoomed = false;
-                    } else {
-                        // 未放大 -> 放大
-                        currentEl.style.transformOrigin = xPercent + '% ' + yPercent + '%';
-                        currentEl.style.transform = 'scale(1.8)';
-                        currentEl.style.transition = 'transform 0.3s ease';
-                        lightboxOverlay.classList.add('zoomed');
-                        isZoomed = true;
-                    }
-                }
-                lastTapTime = 0;
-            } else {
-                // 单击 -> 不关闭灯箱，等待双击
-                lastTapTime = now;
-            }
-        }
+          }
+          lastTapTime = 0;
+        } else { lastTapTime = now; }
+      }
     };
-    
-    // 绑定全局事件
     if (e.type === 'touchstart') {
-        document.addEventListener('touchmove', onMove, { passive: false });
-        document.addEventListener('touchend', onUp);
-        document.addEventListener('touchcancel', onUp);
+      document.addEventListener('touchmove', onMove, { passive: false });
+      document.addEventListener('touchend', onUp);
+      document.addEventListener('touchcancel', onUp);
     } else {
-        document.addEventListener('mousemove', onMove);
-        document.addEventListener('mouseup', onUp);
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
     }
-}
+  }
+  lightboxImg.addEventListener('mousedown', onPointerDown);
+  lightboxImg.addEventListener('touchstart', onPointerDown, { passive: false });
+  lightboxVideo.addEventListener('mousedown', onPointerDown);
+  lightboxVideo.addEventListener('touchstart', onPointerDown, { passive: false });
 
-// 在 img 和 video 上绑定指针事件
-lightboxImg.addEventListener('mousedown', onPointerDown);
-lightboxImg.addEventListener('touchstart', onPointerDown, { passive: false });
-lightboxVideo.addEventListener('mousedown', onPointerDown);
-lightboxVideo.addEventListener('touchstart', onPointerDown, { passive: false });
+  var origOpenLightbox = openLightboxMedia;
+  openLightboxMedia = function(src, type, idx) { resetZoom(); origOpenLightbox(src, type, idx); };
+  var origCloseLightbox = closeLightbox;
+  closeLightbox = function() { resetZoom(); origCloseLightbox(); };
 
-// === openLightboxMedia 包装：切换图片时自动重置缩放 + 传递 idx ===
-var origOpenLightbox = openLightboxMedia;
-openLightboxMedia = function(src, type, idx) {
-    resetZoom();
-    origOpenLightbox(src, type, idx);
-    lightboxImg.setAttribute('draggable', 'false');
-    lightboxVideo.setAttribute('draggable', 'false');
-};
-
-// === 关闭灯箱时也重置缩放 ===
-var origCloseLightbox = closeLightbox;
-closeLightbox = function() {
-    resetZoom();
-    origCloseLightbox();
-};// === 灯箱切换函数 ===
-function nextMedia() {
+  function nextMedia() {
     if (!lightboxOverlay.classList.contains('active')) return;
+    collectMedia();
     currentMediaIndex = (currentMediaIndex + 1) % mediaElements.length;
     var el = mediaElements[currentMediaIndex];
-    if (el.tagName === 'IMG') {
-        openLightboxMedia(el.src, 'image', currentMediaIndex);
-    } else if (el.classList.contains('video-card')) {
-        openLightboxMedia(el.getAttribute('data-src'), 'video', currentMediaIndex);
-    }
-}
-
-function prevMedia() {
+    if (el.tagName === 'IMG') openLightboxMedia(el.src, 'image', currentMediaIndex);
+  }
+  function prevMedia() {
     if (!lightboxOverlay.classList.contains('active')) return;
+    collectMedia();
     currentMediaIndex = (currentMediaIndex - 1 + mediaElements.length) % mediaElements.length;
     var el = mediaElements[currentMediaIndex];
-    if (el.tagName === 'IMG') {
-        openLightboxMedia(el.src, 'image', currentMediaIndex);
-    } else if (el.classList.contains('video-card')) {
-        openLightboxMedia(el.getAttribute('data-src'), 'video', currentMediaIndex);
+    if (el.tagName === 'IMG') openLightboxMedia(el.src, 'image', currentMediaIndex);
+  }
+  // 放大按钮
+  var zoomBtn = document.getElementById('lightbox-zoom-btn');
+  zoomBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var currentMedia = getCurrentMediaElement();
+    if (currentMedia) {
+      if (isZoomed) {
+        currentMedia.style.transform = 'scale(1)';
+        currentMedia.style.transformOrigin = 'center center';
+        lightboxOverlay.classList.remove('zoomed');
+        isZoomed = false;
+        zoomBtn.textContent = '🔍';
+      } else {
+        currentMedia.style.transformOrigin = 'center center';
+        currentMedia.style.transform = 'scale(1.8)';
+        lightboxOverlay.classList.add('zoomed');
+        isZoomed = true;
+        zoomBtn.textContent = '❌';
+      }
     }
-}
+  });
 
-document.addEventListener('keydown', function(e) {
-            if (!lightboxOverlay.classList.contains('active')) return;
-            if (e.key === 'Escape') {
-                closeLightbox();
-            } else if (e.key === 'ArrowLeft') {
-                prevMedia();
-            } else if (e.key === 'ArrowRight') {
-                nextMedia();
-            }
-        });
+  document.addEventListener('keydown', function(e) {
+    if (!lightboxOverlay.classList.contains('active')) return;
+    if (e.key === 'Escape') closeLightbox();
+    else if (e.key === 'ArrowLeft') prevMedia();
+    else if (e.key === 'ArrowRight') nextMedia();
+  });
+})();
 
-// --- 画廊视差滚动 ---
-        var galleryTrigger = document.getElementById('gallery-trigger');
-        var galleryOverlay = document.getElementById('gallery-overlay');
-        var gCol1 = document.getElementById('g-col-1');
-        var gCol2 = document.getElementById('g-col-2');
-        var gCol3 = document.getElementById('g-col-3');
-        var gCol4 = document.getElementById('g-col-4');
-        var gCol5 = document.getElementById('g-col-5');
+// ============ 开屏动画 ============
+(function() {
+  var splash = document.getElementById('splash-screen');
+  var splashRemoved = false;
+  function removeSplash() {
+    if (splashRemoved) return;
+    splashRemoved = true;
+    if (splash) { splash.style.opacity = '0'; setTimeout(function() { splash.remove(); }, 800); }
+  }
+  splash.addEventListener('click', function() { removeSplash(); });
+  setTimeout(function() { removeSplash(); }, 2500);
+})();
 
-        galleryTrigger.addEventListener('click', function() {
-            galleryOverlay.classList.add('active');
-        });
-        galleryOverlay.addEventListener('click', function(e) {
-            if (e.target === galleryOverlay) {
-                galleryOverlay.classList.remove('active');
-            }
-        });
+// ============ 画廊视差滚动 ============
+(function() {
+  var galleryOverlay = document.getElementById('gallery-overlay');
+  var videoOverlay = document.getElementById('video-overlay');
+  var gCol1 = document.getElementById('g-col-1');
+  var gCol2 = document.getElementById('g-col-2');
+  var gCol3 = document.getElementById('g-col-3');
+  var gCol4 = document.getElementById('g-col-4');
+  var gCol5 = document.getElementById('g-col-5');
+  var vCol1 = document.getElementById('v-col-1');
+  var vCol2 = document.getElementById('v-col-2');
+  var vCol3 = document.getElementById('v-col-3');
+  var vCol4 = document.getElementById('v-col-4');
+  var vCol5 = document.getElementById('v-col-5');
 
-        galleryOverlay.addEventListener('scroll', function() {
-            var scrollY = galleryOverlay.scrollTop;
-            gCol1.style.transform = 'translateY(' + (scrollY * -0.4) + 'px)';
-            gCol5.style.transform = 'translateY(' + (scrollY * -0.4) + 'px)';
-            gCol2.style.transform = 'translateY(' + (scrollY * 0.2) + 'px)';
-            gCol4.style.transform = 'translateY(' + (scrollY * 0.2) + 'px)';
-            gCol3.style.transform = 'translateY(' + (scrollY * 0.05) + 'px)';
-        });
+  function applyParallax(overlay, col1, col2, col3, col4, col5) {
+    overlay.addEventListener('scroll', function() {
+      var scrollY = overlay.scrollTop;
+      if(col1) col1.style.transform = 'translateY(' + (scrollY * -0.4) + 'px)';
+      if(col5) col5.style.transform = 'translateY(' + (scrollY * -0.4) + 'px)';
+      if(col2) col2.style.transform = 'translateY(' + (scrollY * 0.2) + 'px)';
+      if(col4) col4.style.transform = 'translateY(' + (scrollY * 0.2) + 'px)';
+      if(col3) col3.style.transform = 'translateY(' + (scrollY * 0.05) + 'px)';
+    });
+  }
+  applyParallax(galleryOverlay, gCol1, gCol2, gCol3, gCol4, gCol5);
+  applyParallax(videoOverlay, vCol1, vCol2, vCol3, vCol4, vCol5);
+})();
 
-        // --- 多層星空视差（三层星空，不同速度产生3D深度感） ---
-        var STAR_COLOR = '#fff';
-        var pointerX = null, pointerY = null;
-        var targetMouseX = window.innerWidth / 2, targetMouseY = window.innerHeight / 2;
-        var mouseX = targetMouseX, mouseY = targetMouseY;
-        
-        var layerConfigs = {
-            front: { count: 80, size: 3, speed: 0.0375, minScale: 0.5, color: '#ffffff' },
-            mid:   { count: 120, size: 2, speed: 0.025, minScale: 0.25, color: '#a8c0ff' },
-            back:  { count: 200, size: 1.5, speed: 0.012, minScale: 0.12, color: '#b8c6ec' }
-        };
-        var layerCanvases = {
-            front: document.getElementById('starfield-layer-front'),
-            mid: document.getElementById('starfield-layer-mid'),
-            back: document.getElementById('starfield-layer-back')
-        };
-        var layerCtxs = {};
-        for (var key in layerCanvases) {
-            layerCtxs[key] = layerCanvases[key].getContext('2d');
-        }
-        var starLayers = { front: [], mid: [], back: [] };
-        
-        function initStarLayer(layerName) {
-            var config = layerConfigs[layerName];
-            var canvas = layerCanvases[layerName];
-            var w = canvas.width = window.innerWidth;
-            var h = canvas.height = window.innerHeight;
-            starLayers[layerName] = [];
-            for (var i = 0; i < config.count; i++) {
-                starLayers[layerName].push({
-                    x: Math.random() * w,
-                    y: Math.random() * h,
-                    z: config.minScale + Math.random() * (1 - config.minScale),
-                    baseAlpha: 0.3 + Math.random() * 0.7,
-                    twinkleSpeed: 0.01 + Math.random() * 0.03,
-                    twinkleOffset: Math.random() * Math.PI * 2
-                });
-            }
-        }
-        
-        function resizeStarLayers() {
-            for (var key in layerCanvases) {
-                var canvas = layerCanvases[key];
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-                var config = layerConfigs[key];
-                starLayers[key].forEach(function(star) {
-                    if (star.x > canvas.width) star.x = Math.random() * canvas.width;
-                    if (star.y > canvas.height) star.y = Math.random() * canvas.height;
-                });
-            }
-        }
-        
-        function updateStarLayer(layerName, time) {
-            var config = layerConfigs[layerName];
-            var canvas = layerCanvases[layerName];
-            var ctx = layerCtxs[layerName];
-            var stars = starLayers[layerName];
-            var speed = config.speed;
-            
-            // 平滑鼠标追踪
-            mouseX += (targetMouseX - mouseX) * 0.05;
-            mouseY += (targetMouseY - mouseY) * 0.05;
-            
-            // 鼠标视差偏移（前层移动多，后层移动少）
-            var cx = window.innerWidth / 2;
-            var cy = window.innerHeight / 2;
-            var dx = (mouseX - cx) * speed;
-            var dy = (mouseY - cy) * speed;
-            
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            stars.forEach(function(star) {
-                star.x += dx * star.z;
-                star.y += dy * star.z;
-                
-                // 循环边界
-                if (star.x < -10) star.x = canvas.width + 10;
-                if (star.x > canvas.width + 10) star.x = -10;
-                if (star.y < -10) star.y = canvas.height + 10;
-                if (star.y > canvas.height + 10) star.y = -10;
-                
-                // 闪烁效果
-                var twinkle = Math.sin(time * star.twinkleSpeed + star.twinkleOffset) * 0.3 + 0.7;
-                var alpha = star.baseAlpha * twinkle;
-                
-                // 绘制星星（光点 + 光晕）
-                ctx.beginPath();
-                ctx.arc(star.x, star.y, config.size * star.z, 0, Math.PI * 2);
-                ctx.fillStyle = config.color;
-                ctx.globalAlpha = alpha * 0.9;
-                ctx.fill();
-                
-                // 光晕
-                ctx.beginPath();
-                ctx.arc(star.x, star.y, config.size * star.z * 2.5, 0, Math.PI * 2);
-                ctx.fillStyle = config.color;
-                ctx.globalAlpha = alpha * 0.1;
-                ctx.fill();
-                
-                ctx.globalAlpha = 1;
-            });
-        }
-        
-        function animateStarLayers(time) {
-            updateStarLayer('front', time);
-            updateStarLayer('mid', time);
-            updateStarLayer('back', time);
-            requestAnimationFrame(animateStarLayers);
-        }
-        
-        // 鼠标/触摸移动
-        document.addEventListener('mousemove', function(e) {
-            targetMouseX = e.clientX;
-            targetMouseY = e.clientY;
-        });
-        document.addEventListener('touchmove', function(e) {
-            if (e.touches.length > 0) {
-                targetMouseX = e.touches[0].clientX;
-                targetMouseY = e.touches[0].clientY;
-            }
-        }, { passive: true });
-        
-        // 初始化三层星空
-        for (var key in layerCanvases) {
-            initStarLayer(key);
-        }
-        window.addEventListener('resize', resizeStarLayers);
-        animateStarLayers(0);
-        
-        // --- 鼠标粒子拖尾特效 ---
-        var particleCanvas = document.getElementById('particle-canvas');
-        var pCtx = particleCanvas.getContext('2d');
-        var particles = [];
-        var lastParticleTime = 0;
-        
-        function resizeParticleCanvas() {
-            particleCanvas.width = window.innerWidth;
-            particleCanvas.height = window.innerHeight;
-        }
-        resizeParticleCanvas();
-        window.addEventListener('resize', resizeParticleCanvas);
-        
-        function createParticle(x, y) {
-            var colors = ['#ffffff', '#a8c0ff', '#b8c6ec', '#ffd700', '#ff9a9e', '#c2e9fb'];
-            var color = colors[Math.floor(Math.random() * colors.length)];
-            var size = Math.random() * 3 + 1;
-            var vx = (Math.random() - 0.5) * 2;
-            var vy = (Math.random() - 0.5) * 2 - 1;
-            var life = 1;
-            var decay = Math.random() * 0.02 + 0.01;
-            var twinkleSpeed = Math.random() * 0.1 + 0.05;
-            particles.push({ x: x, y: y, size: size, vx: vx, vy: vy,
-                           color: color, life: life, decay: decay,
-                           twinkleSpeed: twinkleSpeed, age: 0 });
-        }
-        
-        function animateParticles() {
-            pCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
-            
-            for (var i = particles.length - 1; i >= 0; i--) {
-                var p = particles[i];
-                p.x += p.vx;
-                p.y += p.vy;
-                p.vy -= 0.02;
-                p.life -= p.decay;
-                p.age++;
-                
-                if (p.life <= 0) {
-                    particles.splice(i, 1);
-                    continue;
-                }
-                
-                var twinkle = Math.sin(p.age * p.twinkleSpeed) * 0.3 + 0.7;
-                var alpha = p.life * twinkle;
-                
-                // 粒子光点
-                pCtx.beginPath();
-                pCtx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
-                pCtx.fillStyle = p.color;
-                pCtx.globalAlpha = alpha * 0.8;
-                pCtx.fill();
-                
-                // 粒子光晕
-                pCtx.beginPath();
-                pCtx.arc(p.x, p.y, p.size * p.life * 2, 0, Math.PI * 2);
-                pCtx.fillStyle = p.color;
-                pCtx.globalAlpha = alpha * 0.15;
-                pCtx.fill();
-                
-                pCtx.globalAlpha = 1;
-            }
-            
-            requestAnimationFrame(animateParticles);
-        }
-        animateParticles();
-        
-        // 鼠标移动生成粒子（节流）
-        document.addEventListener('mousemove', function(e) {
-            var now = Date.now();
-            if (now - lastParticleTime > 30) {
-                lastParticleTime = now;
-                for (var i = 0; i < 3; i++) {
-                    createParticle(
-                        e.clientX + (Math.random() - 0.5) * 10,
-                        e.clientY + (Math.random() - 0.5) * 10
-                    );
-                }
-            }
-        });
-        
-        // 触摸移动也生成粒子
-        document.addEventListener('touchmove', function(e) {
-            var now = Date.now();
-            if (now - lastParticleTime > 50) {
-                lastParticleTime = now;
-                if (e.touches.length > 0) {
-                    for (var i = 0; i < 2; i++) {
-                        createParticle(
-                            e.touches[0].clientX + (Math.random() - 0.5) * 10,
-                            e.touches[0].clientY + (Math.random() - 0.5) * 10
-                        );
-                    }
-                }
-            }
-        }, { passive: true });
-// --- 时间主题切换 ---
-        function applyTimeTheme() {
-            var hour = new Date().getHours();
-            var body = document.body;
-            var starColor;
-            var bgGradient;
+// ============ 3D卡片倾斜 ============
+(function() {
+  document.querySelectorAll('.g-col').forEach(function(col) {
+    col.addEventListener('mousemove', function(e) {
+      var rect = col.getBoundingClientRect();
+      var x = e.clientX - rect.left, y = e.clientY - rect.top;
+      var centerX = rect.width / 2, centerY = rect.height / 2;
+      var rotateX = (y - centerY) / centerY * -8;
+      var rotateY = (x - centerX) / centerX * 8;
+      col.querySelectorAll('img').forEach(function(card) {
+        card.style.transform = 'perspective(1000px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) scale(1.02)';
+      });
+    });
+    col.addEventListener('mouseleave', function() {
+      col.querySelectorAll('img').forEach(function(card) {
+        card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)';
+      });
+    });
+    col.addEventListener('mouseenter', function() { col.classList.add('focus-mode'); });
+    col.addEventListener('mouseleave', function() { col.classList.remove('focus-mode'); });
+  });
+})();
 
-            if (hour >= 6 && hour < 12) {
-                // 上午：暖金色调
-                bgGradient = 'linear-gradient(-225deg, #0c0c3d 0%, #1a1a5e 30%, #2d1b69 100%)';
-                starColor = '#FFD700';
-            } else if (hour >= 12 && hour < 18) {
-                // 下午：橙红色调
-                bgGradient = 'linear-gradient(-225deg, #0c0c3d 0%, #1a1a5e 30%, #2d1b69 100%)';
-                starColor = '#FF6B6B';
-            } else if (hour >= 18 && hour < 22) {
-                // 傍晚：深蓝紫调
-                bgGradient = 'linear-gradient(-225deg, #0c0c3d 0%, #1a1a5e 30%, #2d1b69 100%)';
-                starColor = '#a8c0ff';
-            } else {
-                // 深夜 (22-6)：深紫罗兰调
-                bgGradient = 'linear-gradient(-225deg, #0c0c3d 0%, #1a1a5e 30%, #2d1b69 100%)';
-                starColor = '#b8c6ec';
-            }
+// ============ 侧边栏 ============
+(function() {
+  var sidebarTrigger = document.getElementById('sidebar-trigger');
+  var content = document.getElementById('content');
+  sidebarTrigger.addEventListener('click', function(e) {
+    e.stopPropagation();
+    content.classList.toggle('active');
+  });
+  document.addEventListener('click', function(e) {
+    if (!content.contains(e.target) && !sidebarTrigger.contains(e.target)) {
+      content.classList.remove('active');
+    }
+  });
+})();
 
-            body.style.background = bgGradient;
-            STAR_COLOR = starColor;
-            localStorage.setItem('theme_applied', 'true');
-        }
-        applyTimeTheme();
-        // 每分钟检查一次时间变化
-        setInterval(applyTimeTheme, 60000);
-
-        // --- 流星划过特效 ---
-        var shootingCanvas = document.getElementById('shooting-stars-canvas');
-        var shootingCtx = shootingCanvas.getContext('2d');
-        var shootingStars = [];
-
-        function resizeShootingCanvas() {
-            shootingCanvas.width = window.innerWidth;
-            shootingCanvas.height = window.innerHeight;
-        }
-        resizeShootingCanvas();
-        window.addEventListener('resize', resizeShootingCanvas);
-
-        function createShootingStar() {
-            var star = {
-                x: Math.random() * shootingCanvas.width,
-                y: Math.random() * shootingCanvas.height * 0.5,
-                length: Math.random() * 80 + 40,
-                speed: Math.random() * 8 + 6,
-                angle: Math.PI / 4 + (Math.random() - 0.5) * 0.3,
-                opacity: 1,
-                decay: Math.random() * 0.015 + 0.008,
-                color: '255, 255, 255'
-            };
-            shootingStars.push(star);
-        }
-
-        function animateShootingStars() {
-            shootingCtx.clearRect(0, 0, shootingCanvas.width, shootingCanvas.height);
-            
-            for (var i = 0; i < shootingStars.length; i++) {
-                var s = shootingStars[i];
-                s.x += Math.cos(s.angle) * s.speed;
-                s.y += Math.sin(s.angle) * s.speed;
-                s.opacity -= s.decay;
-
-                if (s.opacity <= 0) {
-                    shootingStars.splice(i, 1);
-                    i--;
-                    continue;
-                }
-
-                var tailX = s.x - Math.cos(s.angle) * s.length;
-                var tailY = s.y - Math.sin(s.angle) * s.length;
-
-                var gradient = shootingCtx.createLinearGradient(tailX, tailY, s.x, s.y);
-                gradient.addColorStop(0, 'rgba(' + s.color + ', 0)');
-                gradient.addColorStop(1, 'rgba(' + s.color + ', ' + s.opacity + ')');
-
-                shootingCtx.beginPath();
-                shootingCtx.moveTo(tailX, tailY);
-                shootingCtx.lineTo(s.x, s.y);
-                shootingCtx.strokeStyle = gradient;
-                shootingCtx.lineWidth = 2;
-                shootingCtx.lineCap = 'round';
-                shootingCtx.stroke();
-
-                // 头部亮点
-                shootingCtx.beginPath();
-                shootingCtx.arc(s.x, s.y, 2, 0, Math.PI * 2);
-                shootingCtx.fillStyle = 'rgba(255, 255, 255, ' + s.opacity + ')';
-                shootingCtx.fill();
-            }
-
-            requestAnimationFrame(animateShootingStars);
-        }
-        animateShootingStars();
-
-        // 随机生成流星，每 2-6 秒一次
-        function scheduleShootingStar() {
-            var delay = Math.random() * 4000 + 2000;
-            setTimeout(function() {
-                createShootingStar();
-                scheduleShootingStar();
-            }, delay);
-        }
-        scheduleShootingStar();
-
-    
-        // --- 5. 3D卡片倾斜 ---
-        document.querySelectorAll('.g-col').forEach(function(col) {
-            col.addEventListener('mousemove', function(e) {
-                var rect = col.getBoundingClientRect();
-                var x = e.clientX - rect.left;
-                var y = e.clientY - rect.top;
-                var centerX = rect.width / 2;
-                var centerY = rect.height / 2;
-                var rotateX = (y - centerY) / centerY * -8;
-                var rotateY = (x - centerX) / centerX * 8;
-                
-                col.querySelectorAll('img, .video-card').forEach(function(card) {
-                    card.style.transform = 'perspective(1000px) rotateX(' + rotateX + 'deg) rotateY(' + rotateY + 'deg) scale(1.02)';
-                });
-            });
-            
-            col.addEventListener('mouseleave', function() {
-                col.querySelectorAll('img, .video-card').forEach(function(card) {
-                    card.style.transform = 'perspective(1000px) rotateX(0) rotateY(0) scale(1)';
-                });
-            });
-        });
-        
-        // --- 6. 卡片聚焦模式 ---
-        document.querySelectorAll('.g-col').forEach(function(col) {
-            col.addEventListener('mouseenter', function() {
-                col.classList.add('focus-mode');
-            });
-            col.addEventListener('mouseleave', function() {
-                col.classList.remove('focus-mode');
-            });
-        });
-        
-        // --- 7. 音频频谱跳动 ---
-        var spectrumCanvas = document.getElementById('spectrum-canvas');
-        var sCtx = spectrumCanvas.getContext('2d');
-        var spectrumBars = document.getElementById('spectrum-container');
-        var NUM_BARS = 20;
-        var audioContext, analyser, dataArray;
-        var isAudioSetup = false;
-        
-        // 创建频谱条DOM元素
-        for (var i = 0; i < NUM_BARS; i++) {
-            var bar = document.createElement('div');
-            bar.className = 'spectrum-bar';
-            bar.style.height = '2px';
-            spectrumBars.appendChild(bar);
-        }
-        
-        function setupAudioContext() {
-            if (isAudioSetup) return;
-            try {
-                var audio = document.getElementById('bg-music');
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                analyser = audioContext.createAnalyser();
-                var source = audioContext.createMediaElementSource(audio);
-                source.connect(analyser);
-                analyser.connect(audioContext.destination);
-                analyser.fftSize = 64;
-                dataArray = new Uint8Array(analyser.frequencyBinCount);
-                isAudioSetup = true;
-            } catch(e) {
-                console.log('AudioContext not supported:', e);
-            }
-        }
-        
-        // 用户交互后初始化AudioContext
-        document.addEventListener('click', function() {
-            if (audioContext && audioContext.state === 'suspended') {
-                audioContext.resume();
-            }
-            setupAudioContext();
-        }, { once: false });
-        
-        function animateSpectrum() {
-            requestAnimationFrame(animateSpectrum);
-            if (!isAudioSetup || !analyser) return;
-            
-            analyser.getByteFrequencyData(dataArray);
-            var bars = spectrumBars.querySelectorAll('.spectrum-bar');
-            
-            for (var i = 0; i < NUM_BARS; i++) {
-                var value = dataArray[i] || 0;
-                var height = Math.max(2, (value / 255) * 20);
-                bars[i].style.height = height + 'px';
-                // 颜色随高度变化
-                var hue = 200 + (height / 20) * 60;
-                bars[i].style.background = 'hsl(' + hue + ', 80%, 70%)';
-            }
-        }
-        animateSpectrum();
-        
-        // --- 8. 磁吸按钮 ---
-        document.querySelectorAll('.magnetic-btn').forEach(function(btn) {
-            btn.addEventListener('mousemove', function(e) {
-                var rect = btn.getBoundingClientRect();
-                var x = e.clientX - rect.left - rect.width / 2;
-                var y = e.clientY - rect.top - rect.height / 2;
-                btn.style.transform = 'translate(' + (x * 0.3) + 'px, ' + (y * 0.3) + 'px)';
-            });
-            
-            btn.addEventListener('mouseleave', function() {
-                btn.style.transform = 'translate(0, 0)';
-            });
-        });
-        
-        // --- 9. 打字机标题 ---
-        var typewriterText = "";
-        var typewriterEl = document.getElementById('typewriter-title');
-        var typewriterCursor = document.getElementById('typewriter-cursor');
-        var charIndex = 0;
-        var typewriterStarted = false;
-        
-        function typeWriter() {
-            if (charIndex < typewriterText.length) {
+// ============ 打字机标题 ============
+(function() {
+  var typewriterText = " ✨";
+  var typewriterEl = document.getElementById('typewriter-title');
+  var typewriterCursor = document.getElementById('typewriter-cursor');
+  var charIndex = 0;
+  var splash = document.getElementById('splash-screen');
+  var splashObserver = new MutationObserver(function(mutations) {
+    mutations.forEach(function(mutation) {
+      if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+        if (splash.style.opacity === '0') {
+          setTimeout(function() {
+            function typeWriter() {
+              if (charIndex < typewriterText.length) {
                 typewriterEl.innerHTML += typewriterText.charAt(charIndex);
                 charIndex++;
                 setTimeout(typeWriter, 150);
-            } else {
-                // 打字完成后光标闪烁一段时间后隐藏
-                setTimeout(function() {
-                    typewriterCursor.style.display = 'none';
-                }, 2000);
+              } else {
+                setTimeout(function() { typewriterCursor.style.display = 'none'; }, 2000);
+              }
             }
+            typeWriter();
+          }, 1000);
+          splashObserver.disconnect();
         }
-        
-        // 开屏动画结束后开始打字
-        var origSplashRemove = setTimeout;
-        // 在开屏消失后开始打字
-        var splash = document.getElementById('splash-screen');
-        if (splash) {
-            var observer = new MutationObserver(function(mutations) {
-                mutations.forEach(function(mutation) {
-                    if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
-                        if (splash.style.opacity === '0') {
-                            setTimeout(function() {
-                                typewriterStarted = true;
-                                typeWriter();
-                            }, 1000);
-                            observer.disconnect();
-                        }
-                    }
-                });
-            });
-            observer.observe(splash, { attributes: true });
-        }
-        
-        // --- 10. 全屏沉浸模式 ---
-        
-        
-        // 全屏变化时退出全屏模式
-        document.addEventListener('fullscreenchange', handleFullscreenChange);
-        document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-        document.addEventListener('msfullscreenchange', handleFullscreenChange);
-        
-        function handleFullscreenChange() {
-            if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
-                document.body.classList.remove('fullscreen-exit');
-            }
-        }
-        
-        // ESC键退出全屏时也移除UI
-        });</script>
+      }
+    });
+  });
+  splashObserver.observe(splash, { attributes: true });
+})();
+
+// ============ 全屏 ============
+document.addEventListener('fullscreenchange', function() {
+  if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.msFullscreenElement) {
+    document.body.classList.remove('fullscreen-exit');
+  }
+});
+
+// ============ 三层星空 ============
+(function() {
+  var STAR_COLOR = '#fff';
+  var targetMouseX = window.innerWidth / 2, targetMouseY = window.innerHeight / 2;
+  var mouseX = targetMouseX, mouseY = targetMouseY;
+  var layerConfigs = {
+    front: { count: 80, size: 3, speed: 0.0375, minScale: 0.5, color: '#ffffff' },
+    mid:   { count: 120, size: 2, speed: 0.025, minScale: 0.25, color: '#a8c0ff' },
+    back:  { count: 200, size: 1.5, speed: 0.012, minScale: 0.12, color: '#b8c6ec' }
+  };
+  var layerCanvases = {
+    front: document.getElementById('starfield-layer-front'),
+    mid: document.getElementById('starfield-layer-mid'),
+    back: document.getElementById('starfield-layer-back')
+  };
+  var layerCtxs = {};
+  for (var key in layerCanvases) { layerCtxs[key] = layerCanvases[key].getContext('2d'); }
+  var starLayers = { front: [], mid: [], back: [] };
+
+  function initStarLayer(layerName) {
+    var config = layerConfigs[layerName];
+    var canvas = layerCanvases[layerName];
+    var w = canvas.width = window.innerWidth;
+    var h = canvas.height = window.innerHeight;
+    starLayers[layerName] = [];
+    for (var i = 0; i < config.count; i++) {
+      starLayers[layerName].push({
+        x: Math.random() * w, y: Math.random() * h,
+        z: config.minScale + Math.random() * (1 - config.minScale),
+        baseAlpha: 0.3 + Math.random() * 0.7,
+        twinkleSpeed: 0.01 + Math.random() * 0.03,
+        twinkleOffset: Math.random() * Math.PI * 2
+      });
+    }
+  }
+
+  function resizeStarLayers() {
+    for (var key in layerCanvases) {
+      var canvas = layerCanvases[key];
+      canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+    }
+  }
+
+  function updateStarLayer(layerName, time) {
+    var config = layerConfigs[layerName];
+    var canvas = layerCanvases[layerName];
+    var ctx = layerCtxs[layerName];
+    var stars = starLayers[layerName];
+    mouseX += (targetMouseX - mouseX) * 0.05;
+    mouseY += (targetMouseY - mouseY) * 0.05;
+    var cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+    var dx = (mouseX - cx) * config.speed;
+    var dy = (mouseY - cy) * config.speed;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    stars.forEach(function(star) {
+      star.x += dx * star.z; star.y += dy * star.z;
+      if (star.x < -10) star.x = canvas.width + 10;
+      if (star.x > canvas.width + 10) star.x = -10;
+      if (star.y < -10) star.y = canvas.height + 10;
+      if (star.y > canvas.height + 10) star.y = -10;
+      var twinkle = Math.sin(time * star.twinkleSpeed + star.twinkleOffset) * 0.3 + 0.7;
+      var alpha = star.baseAlpha * twinkle;
+      ctx.beginPath(); ctx.arc(star.x, star.y, config.size * star.z, 0, Math.PI * 2);
+      ctx.fillStyle = config.color; ctx.globalAlpha = alpha * 0.9; ctx.fill();
+      ctx.beginPath(); ctx.arc(star.x, star.y, config.size * star.z * 2.5, 0, Math.PI * 2);
+      ctx.fillStyle = config.color; ctx.globalAlpha = alpha * 0.1; ctx.fill();
+      ctx.globalAlpha = 1;
+    });
+  }
+
+  function animateStarLayers(time) {
+    updateStarLayer('front', time);
+    updateStarLayer('mid', time);
+    updateStarLayer('back', time);
+    requestAnimationFrame(animateStarLayers);
+  }
+
+  document.addEventListener('mousemove', function(e) { targetMouseX = e.clientX; targetMouseY = e.clientY; });
+  document.addEventListener('touchmove', function(e) {
+    if (e.touches.length > 0) { targetMouseX = e.touches[0].clientX; targetMouseY = e.touches[0].clientY; }
+  }, { passive: true });
+  for (var key in layerCanvases) { initStarLayer(key); }
+  window.addEventListener('resize', resizeStarLayers);
+  animateStarLayers(0);
+})();
+
+// ============ 粒子拖尾 ============
+(function() {
+  var particleCanvas = document.getElementById('particle-canvas');
+  var pCtx = particleCanvas.getContext('2d');
+  var particles = [];
+  var lastParticleTime = 0;
+  function resizeParticleCanvas() { particleCanvas.width = window.innerWidth; particleCanvas.height = window.innerHeight; }
+  resizeParticleCanvas();
+  window.addEventListener('resize', resizeParticleCanvas);
+  function createParticle(x, y) {
+    var colors = ['#ffffff', '#a8c0ff', '#b8c6ec', '#ffd700', '#ff9a9e', '#c2e9fb'];
+    var color = colors[Math.floor(Math.random() * colors.length)];
+    var size = Math.random() * 3 + 1;
+    var vx = (Math.random() - 0.5) * 2;
+    var vy = (Math.random() - 0.5) * 2 - 1;
+    var life = 1, decay = Math.random() * 0.02 + 0.01;
+    var twinkleSpeed = Math.random() * 0.1 + 0.05;
+    particles.push({ x: x, y: y, size: size, vx: vx, vy: vy, color: color, life: life, decay: decay, twinkleSpeed: twinkleSpeed, age: 0 });
+  }
+  function animateParticles() {
+    pCtx.clearRect(0, 0, particleCanvas.width, particleCanvas.height);
+    for (var i = particles.length - 1; i >= 0; i--) {
+      var p = particles[i];
+      p.x += p.vx; p.y += p.vy; p.vy -= 0.02; p.life -= p.decay; p.age++;
+      if (p.life <= 0) { particles.splice(i, 1); continue; }
+      var twinkle = Math.sin(p.age * p.twinkleSpeed) * 0.3 + 0.7;
+      var alpha = p.life * twinkle;
+      pCtx.beginPath(); pCtx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+      pCtx.fillStyle = p.color; pCtx.globalAlpha = alpha * 0.8; pCtx.fill();
+      pCtx.beginPath(); pCtx.arc(p.x, p.y, p.size * p.life * 2, 0, Math.PI * 2);
+      pCtx.fillStyle = p.color; pCtx.globalAlpha = alpha * 0.15; pCtx.fill();
+      pCtx.globalAlpha = 1;
+    }
+    requestAnimationFrame(animateParticles);
+  }
+  animateParticles();
+  document.addEventListener('mousemove', function(e) {
+    var now = Date.now();
+    if (now - lastParticleTime > 30) {
+      lastParticleTime = now;
+      for (var i = 0; i < 3; i++) { createParticle(e.clientX + (Math.random() - 0.5) * 10, e.clientY + (Math.random() - 0.5) * 10); }
+    }
+  });
+  document.addEventListener('touchmove', function(e) {
+    var now = Date.now();
+    if (now - lastParticleTime > 50) {
+      lastParticleTime = now;
+      if (e.touches.length > 0) {
+        for (var i = 0; i < 2; i++) { createParticle(e.touches[0].clientX + (Math.random() - 0.5) * 10, e.touches[0].clientY + (Math.random() - 0.5) * 10); }
+      }
+    }
+  }, { passive: true });
+})();
+
+// ============ 流星 ============
+(function() {
+  var shootingCanvas = document.getElementById('shooting-stars-canvas');
+  var shootingCtx = shootingCanvas.getContext('2d');
+  var shootingStars = [];
+  function resizeShootingCanvas() { shootingCanvas.width = window.innerWidth; shootingCanvas.height = window.innerHeight; }
+  resizeShootingCanvas();
+  window.addEventListener('resize', resizeShootingCanvas);
+  function createShootingStar() {
+    shootingStars.push({
+      x: Math.random() * shootingCanvas.width,
+      y: Math.random() * shootingCanvas.height * 0.5,
+      length: Math.random() * 80 + 40,
+      speed: Math.random() * 8 + 6,
+      angle: Math.PI / 4 + (Math.random() - 0.5) * 0.3,
+      opacity: 1, decay: Math.random() * 0.015 + 0.008,
+      color: '255, 255, 255'
+    });
+  }
+  function animateShootingStars() {
+    shootingCtx.clearRect(0, 0, shootingCanvas.width, shootingCanvas.height);
+    for (var i = 0; i < shootingStars.length; i++) {
+      var s = shootingStars[i];
+      s.x += Math.cos(s.angle) * s.speed; s.y += Math.sin(s.angle) * s.speed;
+      s.opacity -= s.decay;
+      if (s.opacity <= 0) { shootingStars.splice(i, 1); i--; continue; }
+      var tailX = s.x - Math.cos(s.angle) * s.length;
+      var tailY = s.y - Math.sin(s.angle) * s.length;
+      var gradient = shootingCtx.createLinearGradient(tailX, tailY, s.x, s.y);
+      gradient.addColorStop(0, 'rgba(' + s.color + ', 0)');
+      gradient.addColorStop(1, 'rgba(' + s.color + ', ' + s.opacity + ')');
+      shootingCtx.beginPath(); shootingCtx.moveTo(tailX, tailY); shootingCtx.lineTo(s.x, s.y);
+      shootingCtx.strokeStyle = gradient; shootingCtx.lineWidth = 2; shootingCtx.lineCap = 'round'; shootingCtx.stroke();
+      shootingCtx.beginPath(); shootingCtx.arc(s.x, s.y, 2, 0, Math.PI * 2);
+      shootingCtx.fillStyle = 'rgba(255, 255, 255, ' + s.opacity + ')'; shootingCtx.fill();
+    }
+    requestAnimationFrame(animateShootingStars);
+  }
+  animateShootingStars();
+  function scheduleShootingStar() {
+    var delay = Math.random() * 4000 + 2000;
+    setTimeout(function() { createShootingStar(); scheduleShootingStar(); }, delay);
+  }
+  scheduleShootingStar();
+})();
+
+// ============ 时间主题 ============
+(function() {
+  function applyTimeTheme() {
+    var hour = new Date().getHours();
+    var starColor;
+    if (hour >= 6 && hour < 12) starColor = '#FFD700';
+    else if (hour >= 12 && hour < 18) starColor = '#FF6B6B';
+    else if (hour >= 18 && hour < 22) starColor = '#a8c0ff';
+    else starColor = '#b8c6ec';
+    localStorage.setItem('theme_applied', 'true');
+  }
+  applyTimeTheme();
+  setInterval(applyTimeTheme, 60000);
+})();
+</script>
 </body>
 </html>
