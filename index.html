@@ -542,13 +542,13 @@ body.fullscreen-exit .video-overlay { z-index: 9999; }
         </li>
         <li>
           <div class="card" data-action="test">
-          <img src="hh/1.gif" alt="视频">
+            <img src="hh/1.gif" alt="视频">
             <span></span>
           </div>
         </li>
         <li>
           <div class="card" data-action="design">
-            <img src="hh/1.gif" alt="视频">
+            <img src="hh/1.gif" alt="设计">
             <span></span>
           </div>
         </li>
@@ -962,7 +962,13 @@ var rotatingNav = document.getElementById('rotating-nav');
     durationDisplay.textContent = formatTime(audio.duration);
     updateProgress();
   });
-  audio.addEventListener('ended', nextTrack);
+  audio.addEventListener('ended', function() {
+    nextTrack();
+    // 歌曲自然结束后，确保下一首自动播放
+    setTimeout(function() {
+        audio.play().catch(function(){});
+    }, 50);
+});
   audio.addEventListener('play', function() { isPlaying = true; updatePlayIcon(); });
   audio.addEventListener('pause', function() { isPlaying = false; updatePlayIcon(); });
   audio.addEventListener('error', function() {
@@ -1373,7 +1379,7 @@ var rotatingNav = document.getElementById('rotating-nav');
 
 // ============ 打字机标题 ============
 (function() {
-  var typewriterText = "(ﾉ*･ω･)ﾉ✨";
+  var typewriterText = "(○´･д･)ﾉ✨";
   var typewriterEl = document.getElementById('typewriter-title');
   var typewriterCursor = document.getElementById('typewriter-cursor');
   var charIndex = 0;
