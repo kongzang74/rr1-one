@@ -238,18 +238,19 @@ canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -
 }
 .music-player-float .background-image {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  object-fit: cover; background: #1e1e2f;
-  filter: brightness(0.85) saturate(1.2);
+  object-fit: cover; background: transparent;
+  filter: none;
+  opacity: 0;
   z-index: 0; pointer-events: none; user-select: none;
 }
 .music-player-float .glass-card {
   position: relative; z-index: 2; width: 100%; height: 100%;
-  backdrop-filter: blur(30px) saturate(190%);
-  -webkit-backdrop-filter: blur(30px) saturate(190%);
-  background: rgba(18, 18, 28, 0.4);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0.05) 100%);
-  box-shadow: inset 0 0 35px rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.32);
+  backdrop-filter: blur(12px) saturate(120%);
+  -webkit-backdrop-filter: blur(12px) saturate(120%);
+  background: rgba(18, 18, 28, 0.15);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+  box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 44px;
   display: flex; flex-direction: column;
   padding: 22px 20px 20px; color: white;
@@ -260,24 +261,24 @@ canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -
   margin-bottom: 12px; padding: 0 4px;
 }
 .music-player-float .current-time {
-  background: rgba(255, 255, 255, 0.12);
-  backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   padding: 10px 18px; border-radius: 40px;
   font-weight: 600; font-size: 1.2rem;
-  border: 1px solid rgba(255,255,255,0.3); letter-spacing: 0.5px;
+  border: 1px solid rgba(255,255,255,0.25); letter-spacing: 0.5px;
 }
 .music-player-float .date-badge {
-  background: rgba(0,0,0,0.2);
-  backdrop-filter: blur(8px);
+  background: rgba(0,0,0,0.1);
+  backdrop-filter: blur(6px);
   padding: 8px 16px; border-radius: 30px;
-  font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.25);
+  font-size: 0.85rem; border: 1px solid rgba(255,255,255,0.2);
 }
 .music-player-float .cover-section { display: flex; justify-content: center; margin: 8px 0 14px; }
 .music-player-float .cover-art {
   width: 180px; height: 180px; border-radius: 30px;
-  background: rgba(255,255,255,0.15);
-  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-  box-shadow: 0 22px 38px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.35);
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+  box-shadow: 0 22px 38px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.25);
   object-fit: cover; transition: transform 0.25s;
   cursor: pointer; pointer-events: auto;
 }
@@ -289,10 +290,10 @@ canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -
 }
 .music-player-float .artist { font-size: 0.95rem; opacity: 0.8; margin-top: 4px; }
 .music-player-float .lyrics-container {
-  background: rgba(0, 0, 0, 0.25);
-  backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+  background: rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
   border-radius: 28px; padding: 14px 14px;
-  margin: 10px 0 8px; border: 1px solid rgba(255,255,255,0.3);
+  margin: 10px 0 8px; border: 1px solid rgba(255,255,255,0.2);
   min-height: 70px; max-height: 100px;
   display: flex; align-items: center; justify-content: center;
   text-align: center; overflow-y: auto;
@@ -334,9 +335,9 @@ canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -
 .music-player-float .small-btn { font-size: 26px; }
 .music-player-float .playlist-toggle { display: flex; justify-content: center; margin: 6px 0 2px; }
 .music-player-float .list-btn {
-  background: rgba(255,255,255,0.1);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255,255,255,0.3);
+  background: rgba(255,255,255,0.06);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.2);
   border-radius: 30px; padding: 8px 24px;
   color: white; font-weight: 500; font-size: 0.9rem;
   cursor: pointer; display: flex; align-items: center; gap: 6px;
@@ -347,15 +348,22 @@ canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -
 /* 歌单面板 */
 .music-player-float .playlist-panel {
   position: absolute; bottom: 0; left: 0; width: 100%;
-  background: rgba(20, 20, 30, 0.75);
-  backdrop-filter: blur(35px); -webkit-backdrop-filter: blur(35px);
-  border-top: 1px solid rgba(255,255,255,0.4);
+  background: rgba(20, 20, 30, 0.4);
+  backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255,255,255,0.3);
   border-radius: 30px 30px 0 0;
   padding: 20px 16px 24px; z-index: 10;
   transform: translateY(100%);
   transition: transform 0.35s cubic-bezier(0.23, 1, 0.32, 1);
   max-height: 55%; overflow-y: auto; color: white;
-  box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+  box-shadow: 0 -10px 30px rgba(0,0,0,0.3);
+  -webkit-scrollbar: none;
+  scrollbar-width: none;
+}
+.music-player-float .playlist-panel::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
 }
 .music-player-float .playlist-panel.open { transform: translateY(0); }
 .music-player-float .playlist-header {
@@ -371,8 +379,8 @@ canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -
   display: flex; justify-content: space-between; align-items: center;
   cursor: pointer; border-radius: 14px; transition: background 0.2s;
 }
-.music-player-float .song-item.active { background: rgba(255,255,255,0.2); font-weight: 600; }
-.music-player-float .song-item:active { background: rgba(255,255,255,0.15); }
+.music-player-float .song-item.active { background: rgba(255,255,255,0.1); font-weight: 600; }
+.music-player-float .song-item:active { background: rgba(255,255,255,0.08); }
 .music-player-float .song-item-title { font-weight: 500; }
 .music-player-float .song-item-artist { font-size: 0.8rem; opacity: 0.7; }
 
