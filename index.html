@@ -675,9 +675,9 @@ body.fullscreen-exit .video-overlay { z-index: 9999; }
         <span class="time-total" id="durationDisplay">0:00</span>
       </div>
       <div class="controls">
-        <button class="ctrl-btn small-btn" id="prevBtn" aria-label="上一曲">⏮️</button>
-        <button class="ctrl-btn play-btn" id="playPauseBtn" aria-label="播放暂停">▶️</button>
-        <button class="ctrl-btn small-btn" id="nextBtn" aria-label="下一曲">⏭️</button>
+        <button class="ctrl-btn small-btn" id="prevBtn" aria-label="上一曲">◁</button>
+        <button class="ctrl-btn play-btn" id="playPauseBtn" aria-label="播放暂停">◊</button>
+        <button class="ctrl-btn small-btn" id="nextBtn" aria-label="下一曲">▷</button>
       </div>
       <div class="playlist-toggle">
         <button class="list-btn" id="togglePlaylistBtn"><span></span> 歌单</button>
@@ -685,7 +685,7 @@ body.fullscreen-exit .video-overlay { z-index: 9999; }
     </div>
     <div class="playlist-panel" id="playlistPanel">
       <div class="playlist-header">
-        <span>🎶 播放列表 (10首)</span>
+        <span> 播放列表 </span>
         <button class="close-list" id="closePlaylistBtn">✕</button>
       </div>
       <div id="songListContainer"></div>
@@ -818,10 +818,10 @@ var rotatingNav = document.getElementById('rotating-nav');
     { title: "星炬不熄", artist: "", src: "星炬不熄.mp3", cover: "https://picsum.photos/id/1043/300/300", lyrics: "雨滴落在树叶上 · 空气里弥漫清香 · 脚步轻轻走过" },
     { title: "远航星的告别", artist: "", src: "远航星的告别.mp3", cover: "https://picsum.photos/id/1047/300/300", lyrics: "霓虹灯闪烁的街 · 夜色温柔如水 · 人群川流不息" },
     { title: "肘我", artist: "", src: "https://music.163.com/song/media/outer/url?id=3379043419.mp3", cover: "https://picsum.photos/id/1049/300/300", lyrics: "海浪拍打岸边 · 海风轻拂脸庞 · 忘掉所有烦恼" },
-    { title: "秋日私语", artist: "Autumn Leaf", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3", cover: "https://picsum.photos/id/1051/300/300", lyrics: "落叶铺满小径 · 秋天悄悄来临 · 思念随风飘散" },
-    { title: "冬日暖阳", artist: "Winter Sun", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3", cover: "https://picsum.photos/id/1055/300/300", lyrics: "冬日的阳光 · 温暖而珍贵 · 像你的拥抱" },
-    { title: "樱花雨", artist: "Sakura", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3", cover: "https://picsum.photos/id/1059/300/300", lyrics: "樱花飘落的速度 · 是每秒五厘米 · 美好稍纵即逝" },
-    { title: "月光曲", artist: "Moonlight", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3", cover: "https://picsum.photos/id/1067/300/300", lyrics: "月光洒满大地 · 宁静而安详 · 晚安我的世界" }
+    { title: "Sleepless Starlight", artist: "", src: "https://music.163.com/song/media/outer/url?id=444003269&uct2.mp3", cover: "https://picsum.photos/id/1051/300/300", lyrics: "落叶铺满小径 · 秋天悄悄来临 · 思念随风飘散" },
+    { title: "Runaway", artist: "", src: "https://music.163.com/song/media/outer/url?id=1486435682&uct2.mp3", cover: "https://picsum.photos/id/1055/300/300", lyrics: "冬日的阳光 · 温暖而珍贵 · 像你的拥抱" },
+    { title: "神度", artist: "", src: "https://music.163.com/song/media/outer/url?id=512359077&uct2.mp3", cover: "https://picsum.photos/id/1059/300/300", lyrics: "樱花飘落的速度 · 是每秒五厘米 · 美好稍纵即逝" },
+    { title: "浩瀚宇宙中我们曾相遇过", artist: "", src: "https://music.163.com/song/media/outer/url?id=1890026729&uct2.mp3", cover: "https://picsum.photos/id/1067/300/300", lyrics: "月光洒满大地 · 宁静而安详 · 晚安我的世界" }
   ];
 
   let currentIndex = 0;
