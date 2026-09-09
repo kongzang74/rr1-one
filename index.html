@@ -539,7 +539,7 @@ body.fullscreen-exit .video-overlay { z-index: 9999; }
         <li>
           <div class="card" data-action="test">
             <img src="hh/1.gif" alt="视频">
-            <span></span>
+            <span>食谱</span>
           </div>
         </li>
         <li>
@@ -621,29 +621,29 @@ body.fullscreen-exit .video-overlay { z-index: 9999; }
 <div class="video-overlay" id="video-overlay">
   <div class="video-grid">
     <div class="v-col" id="v-col-1">
-      <video muted loop playsinline autoplay src="./hhh/1.mp4"></video>
-      <video muted loop playsinline autoplay src="./hhh/2.mp4"></video>
-      <video muted loop playsinline autoplay src="./hhh/3.mp4"></video>
+      <video muted loop playsinline autoplay preload="auto" src="./hhh/1.mp4"></video>
+      <video muted loop playsinline autoplay preload="auto" src="./hhh/2.mp4"></video>
+      <video muted loop playsinline autoplay preload="auto" src="./hhh/3.mp4"></video>
     </div>
     <div class="v-col" id="v-col-2">
-      <video muted loop playsinline autoplay src="./hhh/4.mp4"></video>
-      <video muted loop playsinline autoplay src="./hhh/5.mp4"></video>
-      <video muted loop playsinline autoplay src="./hhh/1.mp4"></video>
+      <video muted loop playsinline autoplay preload="auto" src="./hhh/4.mp4"></video>
+      <video muted loop playsinline autoplay preload="auto" src="./hhh/5.mp4"></video>
+      <video muted loop playsinline autoplay preload="auto" src="./hhh/1.mp4"></video>
     </div>
     <div class="v-col" id="v-col-3">
-      <video muted loop playsinline autoplay src="./hhh/2.mp4"></video>
-      <video muted loop playsinline autoplay src="./hhh/3.mp4"></video>
-      <video muted loop playsinline autoplay src="./hhh/4.mp4"></video>
+      <video muted loop playsinline autoplay preload="auto" src="./hhh/2.mp4"></video>
+      <video muted loop playsinline autoplay preload="auto" src="./hhh/3.mp4"></video>
+      <video muted loop playsinline autoplay preload="auto" src="./hhh/4.mp4"></video>
     </div>
     <div class="v-col" id="v-col-4">
-      <video muted loop playsinline autoplay src="./hhh/5.mp4"></video>
-      <video muted loop playsinline autoplay src="./hhh/1.mp4"></video>
-      <video muted loop playsinline autoplay src="./hhh/2.mp4"></video>
+      <video muted loop playsinline autoplay preload="auto" src="./hhh/5.mp4"></video>
+      <video muted loop playsinline autoplay preload="auto" src="./hhh/1.mp4"></video>
+      <video muted loop playsinline autoplay preload="auto" src="./hhh/2.mp4"></video>
     </div>
     <div class="v-col" id="v-col-5">
-      <video muted loop playsinline autoplay src="./hhh/3.mp4"></video>
-      <video muted loop playsinline autoplay src="./hhh/4.mp4"></video>
-      <video muted loop playsinline autoplay src="./hhh/5.mp4"></video>
+      <video muted loop playsinline autoplay preload="auto" src="./hhh/3.mp4"></video>
+      <video muted loop playsinline autoplay preload="auto" src="./hhh/4.mp4"></video>
+      <video muted loop playsinline autoplay preload="auto" src="./hhh/5.mp4"></video>
     </div>
   </div>
 </div>
@@ -750,6 +750,12 @@ var rotatingNav = document.getElementById('rotating-nav');
         case 'video':
           videoOverlay.classList.add('active');
           hideRotatingNav();
+          // 视频打开时尝试自动播放所有视频（手机端需要延迟确保DOM已渲染）
+          setTimeout(function() {
+            document.querySelectorAll('.video-overlay video').forEach(function(v) {
+              v.play().catch(function(e) { console.warn('视频自动播放被阻止:', e); });
+            });
+          }, 300);
           // 视频打开时暂停音乐
           pauseMusicForVideo();
           break;
@@ -760,7 +766,7 @@ var rotatingNav = document.getElementById('rotating-nav');
           resumeMusicIfNeeded();
           break;
         case 'test':
-          window.location.href = 'test.html';
+          window.open('https://www.xiachufang.com/', '_blank');
           break;
         case 'design':
           window.location.href = 'design.html';
@@ -776,13 +782,39 @@ var rotatingNav = document.getElementById('rotating-nav');
 
   // 点击背景关闭
   galleryOverlay.addEventListener('click', function(e) {
-    if (e.target === galleryOverlay) {
+    // 点击空白区域关闭（兼容手机端：grid元素区域也视为空白）
+    if (e.target === galleryOverlay || (e.target.classList && e.target.classList.contains('gallery-grid'))) {
+      galleryOverlay.classList.remove('active');
+      showRotatingNav();
+    }
+  });
+  // 手机端 touchend 事件支持（防止click事件延迟或失效）
+  galleryOverlay.addEventListener('touchend', function(e) {
+    // 如果点击的是图片则不关闭（让图片的click事件处理灯箱打开）
+    if (e.target.tagName === 'IMG' || e.target.closest('img')) {
+      return;
+    }
+    if (e.target === galleryOverlay || (e.target.classList && e.target.classList.contains('gallery-grid'))) {
+      e.preventDefault();
       galleryOverlay.classList.remove('active');
       showRotatingNav();
     }
   });
   videoOverlay.addEventListener('click', function(e) {
-    if (e.target === videoOverlay) {
+    // 点击空白区域关闭（兼容手机端：grid元素区域也视为空白）
+    if (e.target === videoOverlay || (e.target.classList && e.target.classList.contains('video-grid'))) {
+      videoOverlay.classList.remove('active');
+      showRotatingNav();
+    }
+  });
+  // 手机端 touchend 事件支持（防止click事件延迟或失效）
+  videoOverlay.addEventListener('touchend', function(e) {
+    // 如果点击的是视频或图片则不关闭（让视频的click事件处理灯箱打开）
+    if (e.target.tagName === 'VIDEO' || e.target.tagName === 'IMG' || e.target.closest('video') || e.target.closest('img')) {
+      return;
+    }
+    if (e.target === videoOverlay || (e.target.classList && e.target.classList.contains('video-grid'))) {
+      e.preventDefault();
       videoOverlay.classList.remove('active');
       showRotatingNav();
     }
