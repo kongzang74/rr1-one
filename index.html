@@ -844,16 +844,16 @@ var rotatingNav = document.getElementById('rotating-nav');
 // ============ 音乐播放器逻辑（来自 yy2.html） ============
 (function() {
   const playlist = [
-    { title: "且听风吟", artist: "", src: "https://music.163.com/song/media/outer/url?id=3405074868.mp3", cover: "https://picsum.photos/id/106/300/300", lyrics: "清晨第一缕阳光 · 透过玻璃窗 · 温暖洒在脸上" },
-    { title: "故风吟游之地", artist: "", src: "https://music.163.com/song/media/outer/url?id=2667716744.mp3", cover: "https://picsum.photos/id/106/300/300", lyrics: "一杯咖啡的时光 · 慵懒的午后 · 思绪飘向远方" },
-    { title: "独角", artist: "", src: "独角.mp3", cover: "https://picsum.photos/id/1025/300/300", lyrics: "漫步在星河之间 · 微光闪烁的夜晚 · 你的眼眸像星辰" },
-    { title: "星炬不熄", artist: "", src: "星炬不熄.mp3", cover: "https://picsum.photos/id/1043/300/300", lyrics: "雨滴落在树叶上 · 空气里弥漫清香 · 脚步轻轻走过" },
-    { title: "远航星的告别", artist: "", src: "远航星的告别.mp3", cover: "https://picsum.photos/id/1047/300/300", lyrics: "霓虹灯闪烁的街 · 夜色温柔如水 · 人群川流不息" },
-    { title: "肘我", artist: "", src: "https://music.163.com/song/media/outer/url?id=3379043419.mp3", cover: "https://picsum.photos/id/1049/300/300", lyrics: "海浪拍打岸边 · 海风轻拂脸庞 · 忘掉所有烦恼" },
-    { title: "Sleepless Starlight", artist: "", src: "https://music.163.com/song/media/outer/url?id=444003269&uct2.mp3", cover: "https://picsum.photos/id/1051/300/300", lyrics: "落叶铺满小径 · 秋天悄悄来临 · 思念随风飘散" },
-    { title: "Runaway", artist: "", src: "https://music.163.com/song/media/outer/url?id=1486435682&uct2.mp3", cover: "https://picsum.photos/id/1055/300/300", lyrics: "冬日的阳光 · 温暖而珍贵 · 像你的拥抱" },
-    { title: "神度", artist: "", src: "https://music.163.com/song/media/outer/url?id=512359077&uct2.mp3", cover: "https://picsum.photos/id/1059/300/300", lyrics: "樱花飘落的速度 · 是每秒五厘米 · 美好稍纵即逝" },
-    { title: "浩瀚宇宙中我们曾相遇过", artist: "", src: "https://music.163.com/song/media/outer/url?id=1890026729&uct2.mp3", cover: "https://picsum.photos/id/1067/300/300", lyrics: "月光洒满大地 · 宁静而安详 · 晚安我的世界" }
+    { title: "且听风吟", artist: "", src: "", cover: "https://picsum.photos/id/106/300/300", lyrics: "清晨第一缕阳光 · 透过玻璃窗 · 温暖洒在脸上" },
+    { title: "故风吟游之地", artist: "", src: "", cover: "https://picsum.photos/id/106/300/300", lyrics: "一杯咖啡的时光 · 慵懒的午后 · 思绪飘向远方" },
+    { title: "独角", artist: "", src: "", cover: "https://picsum.photos/id/1025/300/300", lyrics: "漫步在星河之间 · 微光闪烁的夜晚 · 你的眼眸像星辰" },
+    { title: "星炬不熄", artist: "", src: "", cover: "https://picsum.photos/id/1043/300/300", lyrics: "雨滴落在树叶上 · 空气里弥漫清香 · 脚步轻轻走过" },
+    { title: "远航星的告别", artist: "", src: "", cover: "https://picsum.photos/id/1047/300/300", lyrics: "霓虹灯闪烁的街 · 夜色温柔如水 · 人群川流不息" },
+    { title: "肘我", artist: "", src: "", cover: "https://picsum.photos/id/1049/300/300", lyrics: "海浪拍打岸边 · 海风轻拂脸庞 · 忘掉所有烦恼" },
+    { title: "Sleepless Starlight", artist: "", src: "", cover: "https://picsum.photos/id/1051/300/300", lyrics: "落叶铺满小径 · 秋天悄悄来临 · 思念随风飘散" },
+    { title: "Runaway", artist: "", src: "", cover: "https://picsum.photos/id/1055/300/300", lyrics: "冬日的阳光 · 温暖而珍贵 · 像你的拥抱" },
+    { title: "神度", artist: "", src: ", cover: "https://picsum.photos/id/1059/300/300", lyrics: "樱花飘落的速度 · 是每秒五厘米 · 美好稍纵即逝" },
+    { title: "浩瀚宇宙中我们曾相遇过", artist: "", src: "", cover: "https://picsum.photos/id/1067/300/300", lyrics: "月光洒满大地 · 宁静而安详 · 晚安我的世界" }
   ];
 
   let currentIndex = 0;
