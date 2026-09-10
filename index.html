@@ -381,6 +381,35 @@ canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -
 }
 .music-player-float .song-item.active { background: rgba(255,255,255,0.1); font-weight: 600; }
 .music-player-float .song-item:active { background: rgba(255,255,255,0.08); }
+/* ============ 网易云音乐右上角播放器 ============ */
+.netease-player {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 340px;
+  z-index: 10001;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-10px) scale(0.95);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+.netease-player.active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+}
+.netease-player iframe {
+  display: block;
+  width: 100%;
+  height: 450px;
+  border: none;
+}
+
+
 .music-player-float .song-item-title { font-weight: 500; }
 .music-player-float .song-item-artist { font-size: 0.8rem; opacity: 0.7; }
 
@@ -649,54 +678,9 @@ body.fullscreen-exit .video-overlay { z-index: 9999; }
 </div>
 
 <!-- ============ 音乐播放器浮层 ============ -->
-<div class="music-player-float" id="music-player-float">
-  <div class="player-wrapper">
-    <img id="bgImage" class="background-image" src="https://picsum.photos/id/1043/600/1000" alt="背景" crossorigin="anonymous">
-    <div class="glass-card">
-      <div class="time-display">
-        <span class="current-time" id="liveTime">--:--</span>
-        <span class="date-badge" id="liveDate">----.--.--</span>
-      </div>
-      <div class="cover-section">
-        <img id="coverImage" class="cover-art" src="https://picsum.photos/id/237/300/300" alt="封面" crossorigin="anonymous">
-      </div>
-      <div class="song-info">
-        <div class="song-title" id="songTitle">加载中</div>
-        <div class="artist" id="artistName">未知</div>
-      </div>
-      <div class="lyrics-container">
-        <div class="lyrics-text" id="lyricsDisplay">🎵 点击播放</div>
-      </div>
-      <div class="progress-area">
-        <span class="time-elapsed" id="currentTimeDisplay">0:00</span>
-        <div class="progress-bar" id="progressBarContainer">
-          <div class="progress-fill" id="progressFill" style="width:0%"></div>
-        </div>
-        <span class="time-total" id="durationDisplay">0:00</span>
-      </div>
-      <div class="controls">
-        <button class="ctrl-btn small-btn" id="prevBtn" aria-label="上一曲">◁</button>
-        <button class="ctrl-btn play-btn" id="playPauseBtn" aria-label="播放暂停">◊</button>
-        <button class="ctrl-btn small-btn" id="nextBtn" aria-label="下一曲">▷</button>
-      </div>
-      <div class="playlist-toggle">
-        <button class="list-btn" id="togglePlaylistBtn"><span></span> 歌单</button>
-      </div>
-    </div>
-    <div class="playlist-panel" id="playlistPanel">
-      <div class="playlist-header">
-        <span> 播放列表 </span>
-        <button class="close-list" id="closePlaylistBtn">✕</button>
-      </div>
-      <div id="songListContainer"></div>
-    </div>
-  </div>
+<div class="netease-player" id="netease-player">
+  <iframe src="https://music.163.com/outchain/player?type=0&id=18368347147&auto=0&height=430" width="330" height="450" frameborder="0" allowtransparency="true" allow="autoplay" referrerpolicy="no-referrer"></iframe>
 </div>
-
-<!-- 音乐播放器遮罩层 - 点击空白区域关闭 -->
-<div class="music-player-backdrop" id="music-player-backdrop"></div>
-
-<!-- 关闭按钮 -->
 
 
 <!-- 灯箱 -->
@@ -726,7 +710,8 @@ var rotatingNav = document.getElementById('rotating-nav');
   function showRotatingNav() {
     var anyOpen = galleryOverlay.classList.contains('active')
                || videoOverlay.classList.contains('active')
-               || musicPlayerFloat.classList.contains('active');
+               || (musicPlayerFloat && musicPlayerFloat.classList.contains('active'))
+               || (document.getElementById('netease-player') && document.getElementById('netease-player').classList.contains('active'));
     if (!anyOpen) {
       rotatingNav.style.opacity = '1';
       rotatingNav.style.pointerEvents = 'auto';
@@ -740,7 +725,9 @@ var rotatingNav = document.getElementById('rotating-nav');
       // 先关闭所有 overlay
       galleryOverlay.classList.remove('active');
       videoOverlay.classList.remove('active');
-      musicPlayerFloat.classList.remove('active');
+      if (musicPlayerFloat) musicPlayerFloat.classList.remove('active');
+      var neteasePlayer = document.getElementById('netease-player');
+      if (neteasePlayer) neteasePlayer.classList.remove('active');
 
       switch(action) {
         case 'gallery':
@@ -760,10 +747,12 @@ var rotatingNav = document.getElementById('rotating-nav');
           pauseMusicForVideo();
           break;
         case 'music':
-          musicPlayerFloat.classList.add('active');
+          // 显示右上角网易云音乐播放器
+          var neteasePlayer = document.getElementById('netease-player');
+          if (neteasePlayer) {
+            neteasePlayer.classList.add('active');
+          }
           hideRotatingNav();
-          // 打开音乐播放器时如果视频没在播放则恢复音乐
-          resumeMusicIfNeeded();
           break;
         case 'test':
           window.open('https://www.xiachufang.com/', '_blank');
@@ -820,21 +809,25 @@ var rotatingNav = document.getElementById('rotating-nav');
     }
   });
 
-  // 音乐播放器点击空白处收起（但音乐不停）
-  var playerWrapper = document.querySelector('.music-player-float .player-wrapper');
-  musicPlayerFloat.addEventListener('click', function(e) {
-    if (e.target === musicPlayerFloat) {
-      musicPlayerFloat.classList.remove('active');
-      showRotatingNav();
-      // 音乐不停，继续播放
-    }
-  });
+  // 音乐播放器点击空白处收起（但音乐不停）- 已迁移到右上角网易云播放器
+  if (musicPlayerFloat) {
+    var playerWrapper = document.querySelector('.music-player-float .player-wrapper');
+    musicPlayerFloat.addEventListener('click', function(e) {
+      if (e.target === musicPlayerFloat) {
+        musicPlayerFloat.classList.remove('active');
+        showRotatingNav();
+        // 音乐不停，继续播放
+      }
+    });
+  }
 
   // 点击遮罩层关闭音乐播放器
   var musicBackdrop = document.getElementById('music-player-backdrop');
   if (musicBackdrop) {
     musicBackdrop.addEventListener('click', function(e) {
-      musicPlayerFloat.classList.remove('active');
+      if (musicPlayerFloat) {
+        musicPlayerFloat.classList.remove('active');
+      }
       showRotatingNav();
       // 音乐不停，继续播放
     });
@@ -842,188 +835,16 @@ var rotatingNav = document.getElementById('rotating-nav');
 })();
 
 // ============ 音乐播放器逻辑（来自 yy2.html） ============
-(function() {
-  const playlist = [
-    { title: "且听风吟", artist: "", src: "", cover: "https://picsum.photos/id/106/300/300", lyrics: "清晨第一缕阳光 · 透过玻璃窗 · 温暖洒在脸上" },
-    { title: "故风吟游之地", artist: "", src: "", cover: "https://picsum.photos/id/106/300/300", lyrics: "一杯咖啡的时光 · 慵懒的午后 · 思绪飘向远方" },
-    { title: "独角", artist: "", src: "", cover: "https://picsum.photos/id/1025/300/300", lyrics: "漫步在星河之间 · 微光闪烁的夜晚 · 你的眼眸像星辰" },
-    { title: "星炬不熄", artist: "", src: "", cover: "https://picsum.photos/id/1043/300/300", lyrics: "雨滴落在树叶上 · 空气里弥漫清香 · 脚步轻轻走过" },
-    { title: "远航星的告别", artist: "", src: "", cover: "https://picsum.photos/id/1047/300/300", lyrics: "霓虹灯闪烁的街 · 夜色温柔如水 · 人群川流不息" },
-    { title: "肘我", artist: "", src: "", cover: "https://picsum.photos/id/1049/300/300", lyrics: "海浪拍打岸边 · 海风轻拂脸庞 · 忘掉所有烦恼" },
-    { title: "Sleepless Starlight", artist: "", src: "", cover: "https://picsum.photos/id/1051/300/300", lyrics: "落叶铺满小径 · 秋天悄悄来临 · 思念随风飘散" },
-    { title: "Runaway", artist: "", src: "", cover: "https://picsum.photos/id/1055/300/300", lyrics: "冬日的阳光 · 温暖而珍贵 · 像你的拥抱" },
-    { title: "神度", artist: "", src: "", cover: "https://picsum.photos/id/1059/300/300", lyrics: "樱花飘落的速度 · 是每秒五厘米 · 美好稍纵即逝" },
-    { title: "浩瀚宇宙中我们曾相遇过", artist: "", src: "", cover: "https://picsum.photos/id/1067/300/300", lyrics: "月光洒满大地 · 宁静而安详 · 晚安我的世界" }
-  ];
-
-  let currentIndex = 0;
-  const audio = new Audio();
-  let isPlaying = false;
-
-  const bgImage = document.getElementById('bgImage');
-  const coverImage = document.getElementById('coverImage');
-  const songTitle = document.getElementById('songTitle');
-  const artistName = document.getElementById('artistName');
-  const lyricsDisplay = document.getElementById('lyricsDisplay');
-  const currentTimeDisplay = document.getElementById('currentTimeDisplay');
-  const durationDisplay = document.getElementById('durationDisplay');
-  const progressFill = document.getElementById('progressFill');
-  const progressBar = document.getElementById('progressBarContainer');
-  const playPauseBtn = document.getElementById('playPauseBtn');
-  const prevBtn = document.getElementById('prevBtn');
-  const nextBtn = document.getElementById('nextBtn');
-  const liveTime = document.getElementById('liveTime');
-  const liveDate = document.getElementById('liveDate');
-  const togglePlaylistBtn = document.getElementById('togglePlaylistBtn');
-  const playlistPanel = document.getElementById('playlistPanel');
-  const closePlaylistBtn = document.getElementById('closePlaylistBtn');
-  const songListContainer = document.getElementById('songListContainer');
-
-  window.musicAudio = audio; // 暴露给外部控制
-  window.isMusicPlaying = function() { return isPlaying; };
-
-  function formatTime(sec) {
-    if (isNaN(sec) || sec < 0) return "0:00";
-    const m = Math.floor(sec / 60);
-    const s = Math.floor(sec % 60);
-    return m + ':' + s.toString().padStart(2, '0');
-  }
-
-  function updateClock() {
-    const now = new Date();
-    liveTime.textContent = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
-    const days = ['周日','周一','周二','周三','周四','周五','周六'];
-    liveDate.textContent = now.getFullYear() + '.' + (now.getMonth()+1).toString().padStart(2, '0') + '.' + now.getDate().toString().padStart(2, '0') + ' ' + days[now.getDay()];
-  }
-
-  function renderPlaylist() {
-    songListContainer.innerHTML = playlist.map(function(song, idx) {
-      const activeClass = idx === currentIndex ? 'active' : '';
-      return '<div class="song-item ' + activeClass + '" data-index="' + idx + '">' +
-        '<div><div class="song-item-title">' + song.title + '</div>' +
-        '<div class="song-item-artist">' + song.artist + '</div></div>' +
-        '<span>' + (idx === currentIndex ? '🎵' : '') + '</span></div>';
-    }).join('');
-    document.querySelectorAll('.song-item').forEach(function(item) {
-      item.addEventListener('click', function() {
-        const index = parseInt(item.dataset.index, 10);
-        if (!isNaN(index) && index !== currentIndex) {
-          loadTrack(index);
-        }
-        closePlaylist();
-      });
-    });
-  }
-
-  function loadTrack(index) {
-    if (index < 0) index = playlist.length - 1;
-    if (index >= playlist.length) index = 0;
-    currentIndex = index;
-    const track = playlist[currentIndex];
-    songTitle.textContent = track.title;
-    artistName.textContent = track.artist;
-    coverImage.src = track.cover;
-    lyricsDisplay.textContent = track.lyrics || "🎶";
-    audio.src = track.src;
-    audio.load();
-    progressFill.style.width = '0%';
-    currentTimeDisplay.textContent = '0:00';
-    durationDisplay.textContent = '0:00';
-    renderPlaylist();
-    if (isPlaying) {
-      audio.play().catch(function() { isPlaying = false; updatePlayIcon(); });
-    }
-  }
-
-  function updatePlayIcon() {
-    playPauseBtn.textContent = isPlaying ? '▢' : '▷';
-  }
-
-  function togglePlay() {
-    if (!audio.src || audio.src === window.location.href) loadTrack(currentIndex);
-    if (isPlaying) {
-      audio.pause();
-      isPlaying = false;
-    } else {
-      audio.play().then(function() { isPlaying = true; }).catch(function() { isPlaying = false; });
-    }
-    updatePlayIcon();
-  }
-
-  function pauseMusicForVideo() {
-    if (isPlaying) {
-      audio.pause();
-      isPlaying = false;
-      updatePlayIcon();
-    }
-  }
-
-  function resumeMusicIfNeeded() {
-    // 如果视频栏已关闭且音乐播放器也关闭了，且音乐没有在被观看视频时暂停
-    // 这里不做自动恢复，让用户自己点播放
-    // 但如果只是打开了音乐播放器，且之前没有在看视频，则恢复
-  }
-
-  function nextTrack() { loadTrack(currentIndex + 1); }
-  function prevTrack() { loadTrack(currentIndex - 1); }
-
-  function updateProgress() {
-    if (audio.duration && !isNaN(audio.duration)) {
-      progressFill.style.width = (audio.currentTime / audio.duration) * 100 + '%';
-      currentTimeDisplay.textContent = formatTime(audio.currentTime);
-      durationDisplay.textContent = formatTime(audio.duration);
-    }
-  }
-
-  function setProgress(e) {
-    if (!audio.duration) return;
-    const rect = progressBar.getBoundingClientRect();
-    const ratio = Math.min(1, Math.max(0, (e.clientX - rect.left) / rect.width));
-    audio.currentTime = ratio * audio.duration;
-  }
-
-  function openPlaylist() { playlistPanel.classList.add('open'); }
-  function closePlaylist() { playlistPanel.classList.remove('open'); }
-
-  audio.addEventListener('timeupdate', updateProgress);
-  audio.addEventListener('loadedmetadata', function() {
-    durationDisplay.textContent = formatTime(audio.duration);
-    updateProgress();
-  });
-  audio.addEventListener('ended', function() {
-    nextTrack();
-    // 歌曲自然结束后，确保下一首自动播放
-    setTimeout(function() {
-        audio.play().catch(function(){});
-    }, 50);
-});
-  audio.addEventListener('play', function() { isPlaying = true; updatePlayIcon(); });
-  audio.addEventListener('pause', function() { isPlaying = false; updatePlayIcon(); });
-  audio.addEventListener('error', function() {
-    lyricsDisplay.textContent = "⚠️ 音频加载失败";
-    isPlaying = false;
-    updatePlayIcon();
-  });
-
-  playPauseBtn.addEventListener('click', togglePlay);
-  prevBtn.addEventListener('click', prevTrack);
-  nextBtn.addEventListener('click', nextTrack);
-  progressBar.addEventListener('click', setProgress);
-  coverImage.addEventListener('click', togglePlay);
-  togglePlaylistBtn.addEventListener('click', openPlaylist);
-  closePlaylistBtn.addEventListener('click', closePlaylist);
-  playlistPanel.addEventListener('click', function(e) {
-    if (e.target === playlistPanel) closePlaylist();
-  });
-
-  updateClock();
-  setInterval(updateClock, 1000);
-  loadTrack(0);
-  audio.pause();
-  isPlaying = false;
-  updatePlayIcon();
-  renderPlaylist();
-})();
+// 音乐播放器模块已禁用（用户已切换至网易云iframe播放器）
+/*
+updateClock();
+setInterval(updateClock, 1000);
+loadTrack(0);
+audio.pause();
+isPlaying = false;
+updatePlayIcon();
+renderPlaylist();
+*/
 
 // ============ 视频暂停音乐 / 停止恢复音乐 ============
 (function() {
@@ -1037,13 +858,13 @@ var rotatingNav = document.getElementById('rotating-nav');
     });
     vid.addEventListener('pause', function() {
       // 视频暂停时，如果音乐播放器是打开状态则恢复音乐
-      if (window.musicAudio && document.getElementById('music-player-float').classList.contains('active')) {
+      if (window.musicAudio && (function(){var e=document.getElementById('music-player-float');return e&&e.classList.contains('active')})()) {
         window.musicAudio.play().catch(function(){});
       }
     });
     vid.addEventListener('ended', function() {
       // 视频结束也恢复音乐
-      if (window.musicAudio && document.getElementById('music-player-float').classList.contains('active')) {
+      if (window.musicAudio && (function(){var e=document.getElementById('music-player-float');return e&&e.classList.contains('active')})()) {
         window.musicAudio.play().catch(function(){});
       }
     });
@@ -1332,9 +1153,43 @@ var rotatingNav = document.getElementById('rotating-nav');
   function removeSplash() {
     if (splashRemoved) return;
     splashRemoved = true;
-    if (splash) { splash.style.opacity = '0'; setTimeout(function() { splash.remove(); }, 800); }
+    if (splash) {
+      // 淡出
+      splash.style.opacity = '0';
+      // 显示主内容
+      var content = document.getElementById('content');
+      if (content) content.classList.add('active');
+      // 粒子画布降级
+      var particleCanvas = document.getElementById('particle-canvas');
+      if (particleCanvas) particleCanvas.style.zIndex = '-1';
+      // 显示旋转导航
+      var rotatingNav = document.getElementById('rotating-nav');
+      if (rotatingNav) {
+        rotatingNav.style.opacity = '1';
+        rotatingNav.style.pointerEvents = 'auto';
+      }
+      // 800ms后彻底移除
+      setTimeout(function() { 
+        if (splash && splash.parentNode) {
+          splash.parentNode.removeChild(splash);
+        }
+      }, 800);
+    }
   }
-  splash.addEventListener('click', function() { removeSplash(); });
+  // 点击跳过
+  if (splash) {
+    splash.addEventListener('click', function(e) {
+      e.stopPropagation();
+      removeSplash();
+    });
+    // 手机端touchend支持
+    splash.addEventListener('touchend', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      removeSplash();
+    });
+  }
+  // 2.5秒自动跳过
   setTimeout(function() { removeSplash(); }, 2500);
 })();
 
@@ -1643,6 +1498,47 @@ document.addEventListener('fullscreenchange', function() {
   applyTimeTheme();
   setInterval(applyTimeTheme, 60000);
 })();
-</script>
+
+// ============ 网易云音乐右上角播放器控制 ============
+(function() {
+  var neteasePlayer = document.getElementById('netease-player');
+    var galleryOverlay = document.getElementById('gallery-overlay');
+  var videoOverlay = document.getElementById('video-overlay');
+  var rotatingNav = document.getElementById('rotating-nav');
+  var musicPlayerFloat = document.getElementById('music-player-float');
+  
+  function showRotatingNav() {
+    var anyOpen = galleryOverlay.classList.contains('active')
+               || videoOverlay.classList.contains('active')
+               || (musicPlayerFloat && musicPlayerFloat.classList.contains('active'))
+               || (neteasePlayer && neteasePlayer.classList.contains('active'));
+    if (!anyOpen && rotatingNav) {
+      rotatingNav.style.opacity = '1';
+      rotatingNav.style.pointerEvents = 'auto';
+    }
+  }
+  
+  // 已移除关闭按钮，直接点击空白区域关闭
+  
+  // 点击页面其他地方关闭网易云播放器
+  document.addEventListener('click', function(e) {
+    if (neteasePlayer && neteasePlayer.classList.contains('active')) {
+      if (!neteasePlayer.contains(e.target)) {
+        neteasePlayer.classList.remove('active');
+        showRotatingNav();
+      }
+    }
+  });
+  
+  // 手机端 touchend 事件支持
+  document.addEventListener('touchend', function(e) {
+    if (neteasePlayer && neteasePlayer.classList.contains('active')) {
+      if (!neteasePlayer.contains(e.target)) {
+        neteasePlayer.classList.remove('active');
+        showRotatingNav();
+      }
+    }
+  });
+})();</script>
 </body>
 </html>
