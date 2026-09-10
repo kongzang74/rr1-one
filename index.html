@@ -235,6 +235,8 @@ canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -
 .music-player-float .player-wrapper {
   position: relative; width: 100%; height: 100%;
   border-radius: 44px; overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 .music-player-float .background-image {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -244,16 +246,17 @@ canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -
   z-index: 0; pointer-events: none; user-select: none;
 }
 .music-player-float .glass-card {
-  position: relative; z-index: 2; width: 100%; height: 100%;
-  backdrop-filter: blur(12px) saturate(120%);
-  -webkit-backdrop-filter: blur(12px) saturate(120%);
-  background: rgba(18, 18, 28, 0.15);
-  background: linear-gradient(145deg, rgba(255, 255, 255, 0.08) 0%, rgba(255, 255, 255, 0.02) 100%);
+  position: relative; z-index: 2; width: 100%; height: 55%;
+  margin-top: auto;
+  backdrop-filter: blur(12px) saturate(130%);
+  -webkit-backdrop-filter: blur(12px) saturate(130%);
+  background: rgba(18, 18, 28, 0.35);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.12) 0%, rgba(255, 255, 255, 0.05) 100%);
   box-shadow: inset 0 0 20px rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 44px;
+  border-radius: 0 0 44px 44px;
   display: flex; flex-direction: column;
-  padding: 22px 20px 20px; color: white;
+  padding: 18px 20px 16px; color: white;
   text-shadow: 0 2px 6px rgba(0,0,0,0.5);
 }
 .music-player-float .time-display {
@@ -305,7 +308,7 @@ canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -
   display: flex; align-items: center; gap: 10px; margin: 6px 0 8px;
 }
 .music-player-float .time-elapsed, .music-player-float .time-total {
-  font-size: 0.75rem; width: 36px; opacity: 0.85;
+  font-size: 0.75rem; width: 36px; opacity: 0.05;
 }
 .music-player-float .progress-bar {
   flex: 1; height: 5px;
@@ -325,7 +328,7 @@ canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -
   background: transparent; border: none; color: white;
   font-size: 28px; width: 50px; height: 50px;
   display: flex; align-items: center; justify-content: center;
-  cursor: pointer; opacity: 0.85; transition: all 0.2s;
+  cursor: pointer; opacity: 0.05; transition: all 0.2s;
   filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
   -webkit-tap-highlight-color: transparent; border-radius: 50%;
   pointer-events: auto;
@@ -381,37 +384,62 @@ canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -
 }
 .music-player-float .song-item.active { background: rgba(255,255,255,0.1); font-weight: 600; }
 .music-player-float .song-item:active { background: rgba(255,255,255,0.08); }
-/* ============ 网易云音乐右上角播放器 ============ */
-.netease-player {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  width: 340px;
-  z-index: 10001;
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-  overflow: hidden;
-  opacity: 0;
-  pointer-events: none;
-  transform: translateY(-10px) scale(0.95);
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+
+/* 网易云音乐iframe - 嵌入播放器内部，位于毛玻璃下方 */
+.netease-player-bg {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 60%;
+  z-index: 1; border-radius: 44px 44px 0 0; overflow: hidden;
+  background: #12121c;
 }
-.netease-player.active {
+.netease-player-bg iframe {
+  width: 100%; height: 100%; border: none;
   opacity: 1;
   pointer-events: auto;
-  transform: translateY(0) scale(1);
 }
-.netease-player iframe {
-  display: block;
-  width: 100%;
-  height: 450px;
-  border: none;
+/* 毛玻璃UI在iframe之上，点击穿透到iframe */
+.music-player-float .glass-card {
+  pointer-events: none;
 }
+/* 时间显示区域 - 可点击穿透 */
+.music-player-float .time-display { pointer-events: none; }
+/* 封面 - 可点击 */
+.music-player-float .cover-art { pointer-events: auto; }
+/* 控制按钮 - 可点击 */
+.music-player-float .ctrl-btn { pointer-events: auto; }
+/* 歌单按钮 - 可点击 */
+.music-player-float .list-btn { pointer-events: auto; }
+/* 歌单面板 - 可点击 */
+.music-player-float .playlist-panel { pointer-events: auto; }
+.music-player-float .playlist-header { pointer-events: auto; }
+.music-player-float .close-list { pointer-events: auto; }
+.music-player-float .song-item { pointer-events: auto; }
+/* 进度条区域 - 可点击 */
+.music-player-float .progress-area { pointer-events: auto; }
+.music-player-float .progress-bar { pointer-events: auto; }
+/* 歌词区域 - 可点击穿透 */
+.music-player-float .lyrics-container { pointer-events: none; }
+/* 歌曲信息 - 可点击穿透 */
+.music-player-float .song-info { pointer-events: none; }
 
 
 .music-player-float .song-item-title { font-weight: 500; }
-.music-player-float .song-item-artist { font-size: 0.8rem; opacity: 0.7; }
+.music-player-float .song-item-artist { font-size: 0.8rem; opacity: 0.7; }.player-hint {
+  position: absolute;
+  bottom: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  color: rgba(255,255,255,0.6);
+  font-size: 10px;
+  pointer-events: none;
+  text-align: center;
+  background: rgba(0,0,0,0.3);
+  padding: 4px 12px;
+  border-radius: 12px;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
 
 /* 关闭按钮 */
 
@@ -677,13 +705,24 @@ body.fullscreen-exit .video-overlay { z-index: 9999; }
   </div>
 </div>
 
-<!-- ============ 音乐播放器浮层 ============ -->
-<div class="netease-player" id="netease-player">
-  <iframe src="https://music.163.com/outchain/player?type=0&id=18368347147&auto=0&height=430" width="330" height="450" frameborder="0" allowtransparency="true" allow="autoplay" referrerpolicy="no-referrer"></iframe>
+<!-- ============ 音乐播放器浮层（毛玻璃外壳） ============ -->
+<div class="music-player-float" id="music-player-float">
+  <div class="player-wrapper">
+    <!-- 背景图片（模糊） -->
+    <img class="background-image" src="hh/1.gif" alt="">
+    <!-- 网易云播放器（位于毛玻璃下方） -->
+    <div class="netease-player-bg">
+      <iframe id="netease-iframe" src="https://music.163.com/outchain/player?type=0&id=18368347147&auto=1&height=430" frameborder="0" allowtransparency="true" allow="autoplay" referrerpolicy="no-referrer"></iframe>
+    </div>
+    <!-- 毛玻璃卡片（纯装饰） -->
+    <div class="glass-card"></div>
+  </div>
 </div>
+<!-- 音乐播放器遮罩层 -->
 
 
-<!-- 灯箱 -->
+
+<div class="music-player-backdrop" id="music-player-backdrop"></div><!-- 灯箱 -->
 <div class="lightbox-overlay" id="lightbox-overlay">
   <img id="lightbox-img" src="" alt="放大图片" style="display:none;" draggable="false">
   <video id="lightbox-video" controls style="display:none;" draggable="false"></video>
@@ -711,7 +750,8 @@ var rotatingNav = document.getElementById('rotating-nav');
     var anyOpen = galleryOverlay.classList.contains('active')
                || videoOverlay.classList.contains('active')
                || (musicPlayerFloat && musicPlayerFloat.classList.contains('active'))
-               || (document.getElementById('netease-player') && document.getElementById('netease-player').classList.contains('active'));
+               || (false)
+
     if (!anyOpen) {
       rotatingNav.style.opacity = '1';
       rotatingNav.style.pointerEvents = 'auto';
@@ -726,14 +766,13 @@ var rotatingNav = document.getElementById('rotating-nav');
       galleryOverlay.classList.remove('active');
       videoOverlay.classList.remove('active');
       if (musicPlayerFloat) musicPlayerFloat.classList.remove('active');
-      var neteasePlayer = document.getElementById('netease-player');
-      if (neteasePlayer) neteasePlayer.classList.remove('active');
-
+      
       switch(action) {
         case 'gallery':
           galleryOverlay.classList.add('active');
           hideRotatingNav();
           break;
+        function pauseMusicForVideo() { /* 暂停音乐 */ var audio = document.getElementById('video-audio-bg'); if(audio) audio.pause(); };
         case 'video':
           videoOverlay.classList.add('active');
           hideRotatingNav();
@@ -747,10 +786,10 @@ var rotatingNav = document.getElementById('rotating-nav');
           pauseMusicForVideo();
           break;
         case 'music':
-          // 显示右上角网易云音乐播放器
-          var neteasePlayer = document.getElementById('netease-player');
-          if (neteasePlayer) {
-            neteasePlayer.classList.add('active');
+          // 显示毛玻璃音乐播放器
+          var musicFloat = document.getElementById('music-player-float');
+          if (musicFloat) {
+            musicFloat.classList.add('active');
           }
           hideRotatingNav();
           break;
@@ -1499,46 +1538,271 @@ document.addEventListener('fullscreenchange', function() {
   setInterval(applyTimeTheme, 60000);
 })();
 
-// ============ 网易云音乐右上角播放器控制 ============
+// ============ 毛玻璃音乐播放器控制 ============
 (function() {
-  var neteasePlayer = document.getElementById('netease-player');
-    var galleryOverlay = document.getElementById('gallery-overlay');
+  var musicFloat = document.getElementById('music-player-float');
+  var musicBackdrop = document.getElementById('music-player-backdrop');
+  var galleryOverlay = document.getElementById('gallery-overlay');
   var videoOverlay = document.getElementById('video-overlay');
   var rotatingNav = document.getElementById('rotating-nav');
-  var musicPlayerFloat = document.getElementById('music-player-float');
+  var neteaseIframe = document.getElementById('netease-iframe');
   
   function showRotatingNav() {
     var anyOpen = galleryOverlay.classList.contains('active')
                || videoOverlay.classList.contains('active')
-               || (musicPlayerFloat && musicPlayerFloat.classList.contains('active'))
-               || (neteasePlayer && neteasePlayer.classList.contains('active'));
+               || (musicFloat && musicFloat.classList.contains('active'));
     if (!anyOpen && rotatingNav) {
       rotatingNav.style.opacity = '1';
       rotatingNav.style.pointerEvents = 'auto';
     }
   }
   
-  // 已移除关闭按钮，直接点击空白区域关闭
+  // 点击遮罩层关闭音乐播放器（不停止音乐）
+  if (musicBackdrop) {
+    musicBackdrop.addEventListener('click', function(e) {
+      if (musicFloat) {
+        musicFloat.classList.remove('active');
+      }
+      showRotatingNav();
+      // 音乐不停，继续播放（iframe继续在后台运行）
+    });
+  }
   
-  // 点击页面其他地方关闭网易云播放器
+  // 点击毛玻璃播放器外部区域关闭（不停止音乐）
   document.addEventListener('click', function(e) {
-    if (neteasePlayer && neteasePlayer.classList.contains('active')) {
-      if (!neteasePlayer.contains(e.target)) {
-        neteasePlayer.classList.remove('active');
+    if (musicFloat && musicFloat.classList.contains('active')) {
+      if (!musicFloat.contains(e.target)) {
+        musicFloat.classList.remove('active');
         showRotatingNav();
+        // 音乐不停，继续播放
       }
     }
   });
   
   // 手机端 touchend 事件支持
   document.addEventListener('touchend', function(e) {
-    if (neteasePlayer && neteasePlayer.classList.contains('active')) {
-      if (!neteasePlayer.contains(e.target)) {
-        neteasePlayer.classList.remove('active');
+    if (musicFloat && musicFloat.classList.contains('active')) {
+      if (!musicFloat.contains(e.target)) {
+        musicFloat.classList.remove('active');
         showRotatingNav();
+        // 音乐不停，继续播放
       }
     }
   });
-})();</script>
+  
+  // 歌单面板开关
+  var playlistPanel = document.getElementById('playlist-panel');
+  var playlistToggle = document.getElementById('playlist-toggle');
+  var closePlaylist = document.getElementById('close-playlist');
+  if (playlistToggle && playlistPanel) {
+    playlistToggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      playlistPanel.classList.toggle('open');
+    });
+  }
+  if (closePlaylist && playlistPanel) {
+    closePlaylist.addEventListener('click', function(e) {
+      e.stopPropagation();
+      playlistPanel.classList.remove('open');
+    });
+  }
+  
+  // 播放/暂停按钮 - 通过切换iframe的auto参数控制
+  var playBtn = document.getElementById('play-btn');
+  var isPlaying = false;
+  if (playBtn) {
+    playBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      isPlaying = !isPlaying;
+      playBtn.textContent = isPlaying ? '⏸' : '▶';
+      if (neteaseIframe) {
+        // 播放：设置auto=1
+        if (isPlaying) {
+          var currentSrc = neteaseIframe.src;
+          var newSrc = currentSrc.replace('auto=0', 'auto=1');
+          if (newSrc === currentSrc) {
+            newSrc = currentSrc + '&auto=1';
+          }
+          neteaseIframe.src = newSrc;
+        } else {
+          // 暂停：设置auto=0并重新加载
+          var currentSrc = neteaseIframe.src;
+          var newSrc = currentSrc.replace('auto=1', 'auto=0');
+          if (newSrc !== currentSrc) {
+            neteaseIframe.src = newSrc;
+          }
+        }
+      }
+    });
+  }
+  
+  // 上一首/下一首 - 通过重新加载iframe并切换歌单索引
+  var prevBtn = document.getElementById('prev-btn');
+  var nextBtn = document.getElementById('next-btn');
+  var songItems = document.querySelectorAll('.song-item');
+  var currentSongIndex = 0;
+  
+  function updateSongDisplay(index) {
+    songItems.forEach(function(item, i) {
+      if (i === index) {
+        item.classList.add('active');
+      } else {
+        item.classList.remove('active');
+      }
+    });
+    var title = document.getElementById('music-title');
+    var artist = document.getElementById('music-artist');
+    if (songItems[index]) {
+      var itemTitle = songItems[index].querySelector('.song-item-title');
+      var itemArtist = songItems[index].querySelector('.song-item-artist');
+      if (title && itemTitle) title.textContent = itemTitle.textContent;
+      if (artist && itemArtist) artist.textContent = itemArtist.textContent;
+    }
+  }
+  
+  if (prevBtn) {
+    prevBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      currentSongIndex = (currentSongIndex - 1 + songItems.length) % songItems.length;
+      updateSongDisplay(currentSongIndex);
+      isPlaying = true;
+      if (playBtn) playBtn.textContent = '⏸';
+      // 重新加载iframe以切换歌曲
+      if (neteaseIframe) {
+        var timestamp = new Date().getTime();
+        neteaseIframe.src = 'https://music.163.com/outchain/player?type=0&id=18368347147&auto=1&height=430&t=' + timestamp;
+      }
+    });
+  }
+  
+  if (nextBtn) {
+    nextBtn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      currentSongIndex = (currentSongIndex + 1) % songItems.length;
+      updateSongDisplay(currentSongIndex);
+      isPlaying = true;
+      if (playBtn) playBtn.textContent = '⏸';
+      // 重新加载iframe以切换歌曲
+      if (neteaseIframe) {
+        var timestamp = new Date().getTime();
+        neteaseIframe.src = 'https://music.163.com/outchain/player?type=0&id=18368347147&auto=1&height=430&t=' + timestamp;
+      }
+    });
+  }
+  
+  // 点击歌单列表项切换歌曲
+  songItems.forEach(function(item, index) {
+    item.addEventListener('click', function(e) {
+      e.stopPropagation();
+      currentSongIndex = index;
+      updateSongDisplay(currentSongIndex);
+      isPlaying = true;
+      if (playBtn) playBtn.textContent = '⏸';
+      if (playlistPanel) playlistPanel.classList.remove('open');
+      // 重新加载iframe以切换歌曲
+      if (neteaseIframe) {
+        var timestamp = new Date().getTime();
+        neteaseIframe.src = 'https://music.163.com/outchain/player?type=0&id=18368347147&auto=1&height=430&t=' + timestamp;
+      }
+    });
+  });
+  
+  // 封面点击播放/暂停
+  var coverArt = document.getElementById('music-cover');
+  if (coverArt && playBtn) {
+    coverArt.addEventListener('click', function(e) {
+      e.stopPropagation();
+      playBtn.click();
+    });
+  }
+  
+  // 进度条点击（视觉效果）
+  var progressBar = document.getElementById('progress-bar');
+  if (progressBar) {
+    progressBar.addEventListener('click', function(e) {
+      e.stopPropagation();
+      // 进度条视觉效果更新
+      var rect = progressBar.getBoundingClientRect();
+      var percent = (e.clientX - rect.left) / rect.width * 100;
+      var progressFill = document.getElementById('progress-fill');
+      if (progressFill) {
+        progressFill.style.width = percent + '%';
+      }
+    });
+  }
+  
+  // 封面不旋转（用户要求移除旋转动画）
+})();
+// ============ 音乐播放器时钟与日期更新 ============
+(function() {
+  function updateMusicClock() {
+    var now = new Date();
+    var hours = now.getHours();
+    var minutes = now.getMinutes();
+    var timeStr = (hours < 10 ? '0' + hours : hours) + ':' + (minutes < 10 ? '0' + minutes : minutes);
+    var clockEl = document.getElementById('music-clock');
+    if (clockEl) clockEl.textContent = timeStr;
+  }
+  
+  function updateMusicDate() {
+    var now = new Date();
+    var month = now.getMonth() + 1;
+    var date = now.getDate();
+    var weekDays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+    var weekDay = weekDays[now.getDay()];
+    var dateStr = month + '月' + date + '日 ' + weekDay;
+    var dateEl = document.getElementById('music-date');
+    if (dateEl) dateEl.textContent = dateStr;
+  }
+  
+  // 初始化并每秒更新
+  updateMusicClock();
+  updateMusicDate();
+  setInterval(updateMusicClock, 1000);
+  setInterval(updateMusicDate, 60000);
+})();
+
+// ============ 网易云iframe自动播放 ============
+(function() {
+  var musicFloat = document.getElementById('music-player-float');
+  var neteaseIframe = document.getElementById('netease-iframe');
+  var musicCard = document.querySelector('.card[data-action="music"]');
+  
+  // 当打开音乐播放器时，触发iframe播放
+  if (musicFloat && neteaseIframe) {
+    var iframeLoaded = false;
+    
+    // 监听iframe加载完成
+    neteaseIframe.addEventListener('load', function() {
+      if (!iframeLoaded) {
+        iframeLoaded = true;
+        // iframe加载完成后尝试播放
+        // 由于跨域限制，我们无法直接控制iframe，但autoplay=1会让它自动播放
+      }
+    });
+    
+    // 保存原始的show function
+    var originalAddClass = musicFloat.classList.add.bind(musicFloat.classList);
+    
+    // 监听music player打开事件
+    var observer = new MutationObserver(function(mutations) {
+      mutations.forEach(function(mutation) {
+        if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+          if (musicFloat.classList.contains('active')) {
+            // 播放器打开时，确保iframe有正确的src并尝试播放
+            if (neteaseIframe.src.indexOf('auto=0') !== -1) {
+              // 替换auto=0为auto=1以启用自动播放
+              var newSrc = neteaseIframe.src.replace('auto=0', 'auto=1');
+              neteaseIframe.src = newSrc;
+            }
+          }
+        }
+      });
+    });
+    
+    observer.observe(musicFloat, { attributes: true });
+  }
+})();
+</script>
 </body>
 </html>
