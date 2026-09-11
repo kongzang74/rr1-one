@@ -923,7 +923,7 @@ var rotatingNav = document.getElementById('rotating-nav');
     songTitle.textContent = track.title;
     artistName.textContent = track.artist;
     coverImage.src = track.cover;
-    lyricsDisplay.textContent = track.lyrics || "🎶";
+    lyricsDisplay.textContent = track.lyrics || "";
     audio.src = track.src;
     audio.load();
     progressFill.style.width = '0%';
