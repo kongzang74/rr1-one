@@ -902,7 +902,7 @@ var rotatingNav = document.getElementById('rotating-nav');
       return '<div class="song-item ' + activeClass + '" data-index="' + idx + '">' +
         '<div><div class="song-item-title">' + song.title + '</div>' +
         '<div class="song-item-artist">' + song.artist + '</div></div>' +
-        '<span>' + (idx === currentIndex ? '🎵' : '') + '</span></div>';
+        '<span>' + (idx === currentIndex ? '' : '') + '</span></div>';
     }).join('');
     document.querySelectorAll('.song-item').forEach(function(item) {
       item.addEventListener('click', function() {
